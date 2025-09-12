@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinTech Pro - Dashboard de Financiamiento Apalancado</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React y ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Recharts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.8.0/Recharts.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .metric-card {
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; color: white;">
+            <div style="text-align: center;">
+                <h2 style="font-size: 24px; font-weight: bold; margin-bottom: 20px;">🚀 FinTech Pro Dashboard</h2>
+                <div style="width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid white; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+                <p style="margin-top: 20px; font-size: 16px;">Inicializando sistema financiero avanzado...</p>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+
+    <script>
+        function initializeApp() {
+            if (typeof React === 'undefined' || typeof ReactDOM === 'undefined' || typeof Recharts === 'undefined') {
+                setTimeout(initializeApp, 100);
+                return;
+            }
+
+            const { useState, useEffect, useMemo } = React;
+            const { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } = Recharts;
+
+            // ===== MOTOR DE SIMULACIÓN AVANZADO =====
+            const runFinancialSimulation = (params) => {
+                const results = [];
+                let portfolioValue = params.initialCapital;
+                let brokerDebt = 0;
+                let activeLoans = [];
+                let cumulativeProfit = 0;
+                let reserveFund = params.initialCapital * 0.05; // 5% reserva inicial
+                
+                const monthsPerSale = 12 / params.salesCadence;
+
+                for (let month = 0; month <= params.projectionHorizon * 12; month++) {
+                    // Shock de mercado
+                    if (month === params.marketShockMonth && month > 0) {
+                        portfolioValue *= (1 - params.marketShock);
+                    }
+
+                    // Nuevos préstamos
+                    const availableCredit = (portfolioValue * params.maxLtv) - brokerDebt;
+                    if (month > 0 && month % Math.round(monthsPerSale) === 0 && availableCredit >= params.avgSale) {
+                        const monthlyRate = (params.customerRate + params.insuranceCost) / 100 / 12;
+                        const payment = (params.avgSale * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -params.loanTerm));
+                        
+                        activeLoans.push({
+                            principal: params.avgSale,
+                            remainingTerm: params.loanTerm,
+                            monthlyPayment: payment,
+                            defaulted: false
+                        });
+                        brokerDebt += params.avgSale;
+                    }
+
+                    // Procesar pagos y defaults
+                    let monthlyIncome = 0;
+                    let defaultLosses = 0;
+                    
+                    activeLoans = activeLoans.filter(loan => {
+                        if (!loan.defaulted && Math.random() < (params.defaultRate / 100 / 12)) {
+                            loan.defaulted = true;
+                            defaultLosses += loan.principal * 0.6; // Pérdida del 60% en default
+                            return false;
+                        }
+                        
+                        if (!loan.defaulted) {
+                            monthlyIncome += loan.monthlyPayment;
+                            loan.remainingTerm--;
+                        }
+                        
+                        return loan.remainingTerm > 0 && !loan.defaulted;
+                    });
+
+                    // Actualizar valores
+                    brokerDebt *= (1 + params.marginRate / 100 / 12);
+                    portfolioValue *= (1 + params.bondYield / 100 / 12);
+                    portfolioValue -= defaultLosses;
+                    
+                    // Costos operacionales (1% anual del portfolio)
+                    const opCosts = portfolioValue * 0.01 / 12;
+                    const netIncome = monthlyIncome - opCosts;
+
+                    // Decisiones de cash flow basadas en LTV
+                    const currentLtv = portfolioValue > 0 ? brokerDebt / portfolioValue : 0;
+                    let cashToInvest = 0;
+                    let cashToDebt = 0;
+                    let cashToReserve = 0;
+                    let operatingMode = "Crecimiento";
+                    
+                    if (currentLtv < params.ltvLow / 100) {
+                        cashToInvest = netIncome * 0.7;
+                        cashToReserve = netIncome * 0.3;
+                        operatingMode = "Expansión Agresiva";
+                    } else if (currentLtv < params.ltvHigh / 100) {
+                        cashToInvest = netIncome * 0.4;
+                        cashToDebt = netIncome * 0.4;
+                        cashToReserve = netIncome * 0.2;
+                        operatingMode = "Crecimiento Balanceado";
+                    } else {
+                        cashToDebt = netIncome * 0.8;
+                        cashToReserve = netIncome * 0.2;
+                        operatingMode = "Modo Defensivo";
+                    }
+
+                    portfolioValue += cashToInvest;
+                    brokerDebt = Math.max(0, brokerDebt - cashToDebt);
+                    reserveFund += cashToReserve;
+                    cumulativeProfit += netIncome;
+
+                    // Métricas avanzadas
+                    const equity = portfolioValue + reserveFund - brokerDebt;
+                    const roe = equity > 0 ? (cumulativeProfit / equity) * 100 : 0;
+                    const netInterestMargin = ((params.customerRate - params.marginRate) * brokerDebt / portfolioValue) || 0;
+                    const riskAdjustedReturn = roe - (params.defaultRate * 2); // Ajuste por riesgo
+
+                    results.push({
+                        month,
+                        portfolioValue,
+                        brokerDebt,
+                        reserveFund,
+                        equity,
+                        ltv: Math.min(currentLtv * 100, 100),
+                        monthlyIncome,
+                        netIncome,
+                        defaultLosses,
+                        operatingMode,
+                        cumulativeProfit,
+                        roe: Math.max(-50, Math.min(50, roe)),
+                        netInterestMargin,
+                        riskAdjustedReturn: Math.max(-50, Math.min(50, riskAdjustedReturn)),
+                        activeLoansCount: activeLoans.length,
+                        cashToInvest,
+                        cashToDebt,
+                        cashToReserve
+                    });
+                }
+
+                return results;
+            };
+
+            // ===== COMPONENTES UI =====
+            const ParameterSlider = ({ label, name, value, min, max, step, unit, onChange, description }) => {
+                const displayValue = unit === '$' 
+                    ? `$${value.toLocaleString()}` 
+                    : unit === '%' 
+                    ? `${value.toFixed(1)}%` 
+                    : `${value} ${unit}`;
+
+                return React.createElement('div', { className: "mb-6" },
+                    React.createElement('div', { className: "flex justify-between items-center mb-2" },
+                        React.createElement('label', { className: "text-sm font-semibold text-gray-700" }, label),
+                        React.createElement('span', { className: "text-lg font-bold gradient-text" }, displayValue)
+                    ),
+                    React.createElement('input', {
+                        type: "range", name, value, min, max, step, onChange,
+                        className: "w-full mb-1"
+                    }),
+                    description && React.createElement('p', { className: "text-xs text-gray-500" }, description)
+                );
+            };
+
+            const MetricCard = ({ title, value, subtitle, icon, trend, color = "blue" }) => {
+                const colorClass = {
+                    blue: "bg-gradient-to-r from-blue-500 to-blue-600",
+                    green: "bg-gradient-to-r from-green-500 to-green-600",
+                    yellow: "bg-gradient-to-r from-yellow-500 to-yellow-600",
+                    red: "bg-gradient-to-r from-red-500 to-red-600",
+                    purple: "bg-gradient-to-r from-purple-500 to-purple-600"
+                }[color];
+
+                return React.createElement('div', { className: "metric-card glass-card rounded-2xl p-6 shadow-lg" },
+                    React.createElement('div', { className: "flex items-start justify-between" },
+                        React.createElement('div', { className: "flex-1" },
+                            React.createElement('h3', { className: "text-sm font-semibold text-gray-600 uppercase tracking-wide" }, title),
+                            React.createElement('p', { className: "text-3xl font-bold text-gray-900 mt-2" }, value),
+                            subtitle && React.createElement('p', { className: "text-sm text-gray-500 mt-1" }, subtitle)
+                        ),
+                        icon && React.createElement('div', { 
+                            className: `w-12 h-12 ${colorClass} rounded-xl flex items-center justify-center text-white text-xl`
+                        }, icon)
+                    ),
+                    trend !== undefined && React.createElement('div', { className: "mt-4" },
+                        React.createElement('span', { 
+                            className: `inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                trend >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`
+                        }, trend >= 0 ? `↗ +${trend.toFixed(1)}%` : `↘ ${trend.toFixed(1)}%`)
+                    )
+                );
+            };
+
+            const RiskGauge = ({ value, low, high, title }) => {
+                const percentage = Math.min(Math.max(value, 0), 100);
+                let color = '#10b981';
+                let riskLevel = 'Bajo';
+                
+                if (percentage >= low && percentage < high) {
+                    color = '#f59e0b';
+                    riskLevel = 'Medio';
+                } else if (percentage >= high) {
+                    color = '#ef4444';
+                    riskLevel = 'Alto';
+                }
+
+                return React.createElement('div', { className: "glass-card p-6 rounded-2xl text-center" },
+                    React.createElement('h3', { className: "text-lg font-bold text-gray-800 mb-4" }, title),
+                    React.createElement('div', { className: "relative w-32 h-32 mx-auto mb-4" },
+                        React.createElement('svg', { className: "w-full h-full transform -rotate-90", viewBox: "0 0 36 36" },
+                            React.createElement('circle', {
+                                cx: "18", cy: "18", r: "16",
+                                fill: "none", stroke: "#e5e7eb", strokeWidth: "3"
+                            }),
+                            React.createElement('circle', {
+                                cx: "18", cy: "18", r: "16",
+                                fill: "none", stroke: color, strokeWidth: "3",
+                                strokeDasharray: `${percentage} 100`,
+                                strokeLinecap: "round",
+                                className: "transition-all duration-1000"
+                            })
+                        ),
+                        React.createElement('div', { className: "absolute inset-0 flex flex-col items-center justify-center" },
+                            React.createElement('span', { className: "text-xl font-bold" }, `${percentage.toFixed(1)}%`),
+                            React.createElement('span', { className: "text-xs text-gray-500" }, riskLevel)
+                        )
+                    )
+                );
+            };
+
+            const ScenarioButtons = ({ onApplyScenario }) => {
+                const scenarios = [
+                    { name: 'Conservador', customerRate: 18, marginRate: 1.8, defaultRate: 1.0 },
+                    { name: 'Balanceado', customerRate: 25, marginRate: 2.5, defaultRate: 2.0 },
+                    { name: 'Agresivo', customerRate: 35, marginRate: 3.5, defaultRate: 4.0 }
+                ];
+
+                return React.createElement('div', { className: "glass-card p-6 rounded-2xl" },
+                    React.createElement('h3', { className: "text-lg font-bold gradient-text mb-4" }, "🎯 Escenarios Predefinidos"),
+                    React.createElement('div', { className: "space-y-3" },
+                        scenarios.map(scenario =>
+                            React.createElement('button', {
+                                key: scenario.name,
+                                onClick: () => onApplyScenario(scenario),
+                                className: "w-full p-4 text-left border-2 border-gray-200 rounded-xl hover:border-purple-400 hover:bg-purple-50 transition-all"
+                            },
+                                React.createElement('div', { className: "font-semibold text-gray-800" }, scenario.name),
+                                React.createElement('div', { className: "text-sm text-gray-600" },
+                                    `Cliente: ${scenario.customerRate}% | Margen: ${scenario.marginRate}% | Default: ${scenario.defaultRate}%`
+                                )
+                            )
+                        )
+                    )
+                );
+            };
+
+            // ===== COMPONENTE PRINCIPAL =====
+            const FinTechDashboard = () => {
+                const [params, setParams] = useState({
+                    initialCapital: 150000,
+                    bondYield: 5.5,
+                    maxLtv: 0.85,
+                    avgSale: 35000,
+                    customerRate: 28.0,
+                    insuranceCost: 2.0,
+                    loanTerm: 18,
+                    salesCadence: 8,
+                    ltvLow: 60,
+                    ltvHigh: 75,
+                    marginRate: 2.8,
+                    projectionHorizon: 3,
+                    marketShock: 0,
+                    marketShockMonth: 12,
+                    defaultRate: 2.5
+                });
+
+                const [data, setData] = useState([]);
+
+                useEffect(() => {
+                    const simulationData = runFinancialSimulation(params);
+                    setData(simulationData);
+                }, [params]);
+
+                const handleParamChange = (e) => {
+                    const { name, value } = e.target;
+                    setParams(prev => ({ ...prev, [name]: parseFloat(value) }));
+                };
+
+                const applyScenario = (scenario) => {
+                    setParams(prev => ({ ...prev, ...scenario }));
+                };
+
+                const currentData = data[data.length - 1] || {};
+                const prevData = data[data.length - 2] || {};
+                
+                const formatCurrency = (val) => `$${Math.round(val).toLocaleString()}`;
+                const nim = (params.customerRate + params.insuranceCost - params.marginRate).toFixed(1);
+                const roeTrend = currentData.roe && prevData.roe ? currentData.roe - prevData.roe : 0;
+
+                return React.createElement('div', { className: "min-h-screen p-4 lg:p-8" },
+                    React.createElement('div', { className: "max-w-7xl mx-auto" },
+                        // Header
+                        React.createElement('div', { className: "glass-card p-8 rounded-3xl shadow-2xl mb-8 text-center" },
+                            React.createElement('h1', { className: "text-4xl font-bold text-white mb-2" }, "🚀 FinTech Pro Dashboard"),
+                            React.createElement('h2', { className: "text-xl text-white opacity-90 mb-4" }, "Sistema Avanzado de Financiamiento Apalancado"),
+                            React.createElement('p', { className: "text-white opacity-75" }, 
+                                "Análisis en tiempo real con gestión de riesgo, simulación de escenarios y métricas financieras profesionales"
+                            )
+                        ),
+
+                        React.createElement('div', { className: "grid grid-cols-1 xl:grid-cols-4 gap-8" },
+                            // Panel de Control
+                            React.createElement('div', { className: "xl:col-span-1 space-y-6" },
+                                React.createElement('div', { className: "glass-card p-6 rounded-2xl" },
+                                    React.createElement('h3', { className: "text-xl font-bold gradient-text mb-6" }, "⚙️ Parámetros Core"),
+                                    React.createElement(ParameterSlider, {
+                                        label: "Capital Inicial", name: "initialCapital", 
+                                        value: params.initialCapital, min: 50000, max: 500000, step: 25000, 
+                                        unit: "$", onChange: handleParamChange,
+                                        description: "Capital base para operaciones"
+                                    }),
+                                    React.createElement(ParameterSlider, {
+                                        label: "Ticket Promedio", name: "avgSale", 
+                                        value: params.avgSale, min: 15000, max: 100000, step: 5000, 
+                                        unit: "$", onChange: handleParamChange,
+                                        description: "Monto promedio por financiamiento"
+                                    }),
+                                    React.createElement(ParameterSlider, {
+                                        label: "Tasa Cliente", name: "customerRate", 
+                                        value: params.customerRate, min: 15, max: 40, step: 0.5, 
+                                        unit: "%", onChange: handleParamChange,
+                                        description: "Tasa anual al cliente final"
+                                    }),
+                                    React.createElement(ParameterSlider, {
+                                        label: "Tasa de Margen", name: "marginRate", 
+                                        value: params.marginRate, min: 1, max: 6, step: 0.1, 
+                                        unit: "%", onChange: handleParamChange,
+                                        description: "Costo de fondeo (margen)"
+                                    }),
+                                    React.createElement(ParameterSlider, {
+                                        label: "Tasa Default", name: "defaultRate", 
+                                        value: params.defaultRate, min: 0.5, max: 8, step: 0.1, 
+                                        unit: "%", onChange: handleParamChange,
+                                        description: "Tasa anual de incumplimiento"
+                                    })
+                                ),
+                                
+                                React.createElement('div', { className: "glass-card p-6 rounded-2xl" },
+                                    React.createElement('h3', { className: "text-xl font-bold gradient-text mb-6" }, "🛡️ Gestión de Riesgo"),
+                                    React.createElement(ParameterSlider, {
+                                        label: "LTV Conservador", name: "ltvLow", 
+                                        value: params.ltvLow, min: 45, max: 70, step: 1, 
+                                        unit: "%", onChange: handleParamChange,
+                                        description: "Umbral para modo expansión"
+                                    }),
+                                    React.createElement(ParameterSlider, {
+                                        label: "LTV Crítico", name: "ltvHigh", 
+                                        value: params.ltvHigh, min: 70, max: 85, step: 1, 
+                                        unit: "%", onChange: handleParamChange,
+                                        description: "Umbral para modo defensivo"
+                                    }),
+                                    React.createElement('div', { className: "mt-6" },
+                                        React.createElement('label', { className: "block text-sm font-semibold text-gray-700 mb-2" }, "Simulación de Crisis"),
+                                        React.createElement('div', { className: "grid grid-cols-2 gap-2" },
+                                            [0, 0.1, 0.2, 0.3].map(shock => 
+                                                React.createElement('button', {
+                                                    key: shock,
+                                                    onClick: () => setParams(prev => ({ ...prev, marketShock: shock })),
+                                                    className: `p-2 rounded-lg text-sm font-semibold transition ${
+                                                        params.marketShock === shock 
+                                                            ? 'bg-red-600 text-white' 
+                                                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                    }`
+                                                }, shock === 0 ? 'Normal' : `-${(shock*100).toFixed(0)}%`)
+                                            )
+                                        )
+                                    )
+                                ),
+                                
+                                React.createElement(ScenarioButtons, { onApplyScenario: applyScenario })
+                            ),
+
+                            // Dashboard Principal
+                            React.createElement('div', { className: "xl:col-span-3 space-y-6" },
+                                // Métricas principales
+                                React.createElement('div', { className: "grid grid-cols-2 md:grid-cols-4 gap-6" },
+                                    React.createElement(RiskGauge, {
+                                        value: currentData.ltv || 0,
+                                        low: params.ltvLow,
+                                        high: params.ltvHigh,
+                                        title: "LTV Actual"
+                                    }),
+                                    React.createElement(MetricCard, {
+                                        title: "Margen Neto",
+                                        value: `${nim}%`,
+                                        subtitle: "Net Interest Margin",
+                                        icon: "💹",
+                                        color: "green"
+                                    }),
+                                    React.createElement(MetricCard, {
+                                        title: "ROE",
+                                        value: `${(currentData.roe || 0).toFixed(1)}%`,
+                                        subtitle: "Return on Equity",
+                                        icon: "📊",
+                                        trend: roeTrend,
+                                        color: currentData.roe > 0 ? "green" : "red"
+                                    }),
+                                    React.createElement(MetricCard, {
+                                        title: "Capital Propio",
+                                        value: formatCurrency(currentData.equity || 0),
+                                        subtitle: `Mes ${currentData.month || 0}`,
+                                        icon: "💰",
+                                        color: "blue"
+                                    })
+                                ),
+
+                                // Gráficos principales
+                                React.createElement('div', { className: "grid grid-cols-1 lg:grid-cols-2 gap-6" },
+                                    React.createElement('div', { className: "glass-card p-6 rounded-2xl" },
+                                        React.createElement('h3', { className: "text-lg font-bold text-gray-800 mb-4" }, "Evolución LTV vs Umbrales de Riesgo"),
+                                        React.createElement('div', { style: { width: '100%', height: '300px' } },
+                                            React.createElement(ResponsiveContainer, null,
+                                                React.createElement(LineChart, { data: data.slice(0, params.projectionHorizon * 12 + 1) },
+                                                    React.createElement(CartesianGrid, { strokeDasharray: "3 3" }),
+                                                    React.createElement(XAxis, { dataKey: "month" }),
+                                                    React.createElement(YAxis, { domain: [0, 100] }),
+                                                    React.createElement(Tooltip, {
+                                                        formatter: (value, name) => [`${value.toFixed(1)}%`, name]
+                                                    }),
+                                                    React.createElement(Legend),
+                                                    React.createElement(ReferenceLine, { y: params.ltvLow, stroke: "#f59e0b", strokeDasharray: "5 5", label: "Conservador" }),
+                                                    React.createElement(ReferenceLine, { y: params.ltvHigh, stroke: "#ef4444", strokeDasharray: "5 5", label: "Crítico" }),
+                                                    React.createElement(Line, { 
+                                                        type: "monotone", dataKey: "ltv", name: "LTV Actual", 
+                                                        stroke: "#3b82f6", strokeWidth: 3, dot: false 
+                                                    })
+                                                )
+                                            )
+                                        )
+                                    ),
+
+                                    React.createElement('div', { className: "glass-card p-6 rounded-2xl" },
+                                        React.createElement('h3', { className: "text-lg font-bold text-gray-800 mb-4" }, "Rentabilidad Ajustada por Riesgo"),
+                                        React.createElement('div', { style: { width: '100%', height: '300px' } },
+                                            React.createElement(ResponsiveContainer, null,
+                                                React.createElement(AreaChart, { data: data.slice(0, params.projectionHorizon * 12 + 1) },
+                                                    React.createElement(CartesianGrid, { strokeDasharray: "3 3" }),
+                                                    React.createElement(XAxis, { dataKey: "month" }),
+                                                    React.createElement(YAxis),
+                                                    React.createElement(Tooltip, {
+                                                        formatter: (value, name) => [`${value.toFixed(1)}%`, name]
+                                                    }),
+                                                    React.createElement(Legend),
+                                                    React.createElement(Area, { 
+                                                        type: "monotone", dataKey: "roe", name: "ROE", 
+                                                        stroke: "#10b981", fill: "#a7f3d0", fillOpacity: 0.6
+                                                    }),
+                                                    React.createElement(Area, { 
+                                                        type: "monotone", dataKey: "riskAdjustedReturn", name: "Retorno Ajustado", 
+                                                        stroke: "#3b82f6", fill: "#bfdbfe", fillOpacity: 0.6
+                                                    })
+                                                )
+                                            )
+                                        )
+                                    )
+                                ),
+
+                                React.createElement('div', { className: "glass-card p-6 rounded-2xl" },
+                                    React.createElement('h3', { className: "text-lg font-bold text-gray-800 mb-4" }, "Composición de Activos vs Pasivos"),
+                                    React.createElement('div', { style: { width: '100%', height: '350px' } },
+                                        React.createElement(ResponsiveContainer, null,
+                                            React.createElement(AreaChart, { data: data.slice(0, params.projectionHorizon * 12 + 1) },
+                                                React.createElement(CartesianGrid, { strokeDasharray: "3 3" }),
+                                                React.createElement(XAxis, { dataKey: "month" }),
+                                                React.createElement(YAxis, { 
+                                                    
