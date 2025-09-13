@@ -1,16 +1,18 @@
 import express from 'express';
 import pool from '../db/index.js';
+// CAMBIO: Importamos las herramientas de seguridad
+import { authMiddleware, checkPermission } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// GET /api/config - Get the current configuration
-router.get('/', async (req, res) => {
+// GET /api/config - Obtener la configuración actual
+router.get('/', [authMiddleware, checkPermission('config:view')], async (req, res) => {
     try {
         const result = await pool.query("SELECT value FROM global_config WHERE key = 'master_config'");
         if (result.rows.length > 0) {
             res.json(result.rows[0].value);
         } else {
-            res.json({}); // Return empty object if no config is set
+            res.json({});
         }
     } catch (err) {
         console.error(err.message);
@@ -18,11 +20,10 @@ router.get('/', async (req, res) => {
     }
 });
 
-// POST /api/config - Update the configuration
-router.post('/', async (req, res) => {
+// POST /api/config - Actualizar la configuración
+router.post('/', [authMiddleware, checkPermission('config:edit')], async (req, res) => {
     const configValue = req.body;
     try {
-        // Use an UPSERT operation to either insert a new config or update the existing one
         const query = `
             INSERT INTO global_config (key, value)
             VALUES ('master_config', $1)

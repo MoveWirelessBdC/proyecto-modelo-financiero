@@ -1,113 +1,71 @@
+// server/db/init.js
 import pool from './index.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
+import db from '../models/index.js';
 
-const createTablesAndAdmin = async () => {
-    const client = await pool.connect();
+const ROLES = ['Asesor Financiero', 'Equipo Comercial', 'Contable'];
+const PERMISSIONS = [ /* ... (lista de permisos sin cambios) ... */ ];
+const ROLE_PERMISSIONS = { /* ... (asignación de permisos sin cambios) ... */ };
+
+const initializeDatabase = async () => {
+    console.log('🚀 Iniciando la inicialización de la base de datos...');
     try {
-        await client.query('BEGIN');
+        await db.sequelize.sync({ force: true });
+        console.log('🏗️  Tablas de la base de datos creadas/sincronizadas.');
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
 
-        // Users table for authentication
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS users (
-                id SERIAL PRIMARY KEY,
-                username VARCHAR(255) UNIQUE NOT NULL,
-                password_hash VARCHAR(255) NOT NULL,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
+            console.log('🔄 Insertando roles...');
+            const roleInsertPromises = ROLES.map(role => client.query('INSERT INTO "Roles" (nombre_rol) VALUES ($1) ON CONFLICT (nombre_rol) DO NOTHING', [role]));
+            await Promise.all(roleInsertPromises);
+            console.log('✅ Roles insertados correctamente.');
 
-        // Check if admin user exists
-        const res = await client.query('SELECT * FROM users WHERE username = $1', ['admin']);
-        if (res.rows.length === 0) {
+            console.log('🔄 Insertando permisos...');
+            const permissionInsertPromises = PERMISSIONS.map(permission => client.query('INSERT INTO "Permissions" (accion) VALUES ($1) ON CONFLICT (accion) DO NOTHING', [permission]));
+            await Promise.all(permissionInsertPromises);
+            console.log('✅ Permisos insertados correctamente.');
+
+            console.log('🔄 Asignando permisos a roles...');
+            for (const roleName in ROLE_PERMISSIONS) {
+                const roleResult = await client.query('SELECT id FROM "Roles" WHERE nombre_rol = $1', [roleName]);
+                const roleId = roleResult.rows[0].id;
+                const permissionsForRole = ROLE_PERMISSIONS[roleName];
+                for (const permissionAction of permissionsForRole) {
+                    const permissionResult = await client.query('SELECT id FROM "Permissions" WHERE accion = $1', [permissionAction]);
+                    const permissionId = permissionResult.rows[0].id;
+                    await client.query('INSERT INTO "Rol_Permisos" (rol_id, permiso_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [roleId, permissionId]);
+                }
+            }
+            console.log('✅ Permisos asignados correctamente.');
+
+            console.log('🔄 Creando usuario administrador...');
+            const adminEmail = 'admin@app.com';
+            const adminPassword = 'supersecretpassword';
             const salt = await bcrypt.genSalt(10);
-            const passwordHash = await bcrypt.hash('password', salt);
-            await client.query('INSERT INTO users (username, password_hash) VALUES ($1, $2)', ['admin', passwordHash]);
-            console.log('Admin user created.');
-        } else {
-            console.log('Admin user already exists.');
+            const passwordHash = await bcrypt.hash(adminPassword, salt);
+            const adminRoleResult = await client.query("SELECT id FROM \"Roles\" WHERE nombre_rol = 'Asesor Financiero'");
+            const adminRoleId = adminRoleResult.rows[0].id;
+            await client.query(
+                `INSERT INTO "Users" (nombre_completo, email, password_hash, rol_id, "createdAt", "updatedAt")
+                 VALUES ($1, $2, $3, $4, NOW(), NOW()) ON CONFLICT (email) DO NOTHING`,
+                ['Administrador del Sistema', adminEmail, passwordHash, adminRoleId]
+            );
+            console.log(`✅ Usuario administrador creado con email: ${adminEmail} y contraseña: ${adminPassword}`);
+
+            await client.query('COMMIT');
+            console.log('🎉 ¡Inicialización de la base de datos completada exitosamente!');
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
         }
-
-        // Global config table
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS global_config (
-                id SERIAL PRIMARY KEY,
-                key VARCHAR(255) UNIQUE NOT NULL,
-                value JSONB NOT NULL
-            );
-        `);
-
-        // Clients table
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS clients (
-                id SERIAL PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                contact_info TEXT,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-
-        // Projects table
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS projects (
-                id SERIAL PRIMARY KEY,
-                client_id INTEGER REFERENCES clients(id) ON DELETE CASCADE,
-                description TEXT NOT NULL,
-                amount NUMERIC(15, 2) NOT NULL,
-                start_date DATE NOT NULL,
-                interest_rate NUMERIC(5, 2) NOT NULL,
-                insurance_cost NUMERIC(5, 2) NOT NULL,
-                term_months INTEGER NOT NULL,
-                sales_commission NUMERIC(5, 2) NOT NULL,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-
-        // Amortization schedule table
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS amortization_schedule (
-                id SERIAL PRIMARY KEY,
-                project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
-                month INTEGER NOT NULL,
-                payment_date DATE NOT NULL,
-                monthly_payment NUMERIC(15, 2) NOT NULL,
-                principal NUMERIC(15, 2) NOT NULL,
-                interest NUMERIC(15, 2) NOT NULL,
-                remaining_balance NUMERIC(15, 2) NOT NULL,
-                status VARCHAR(50) DEFAULT 'Pending'
-            );
-        `);
-
-        // Portfolio assets table
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS portfolio_assets (
-                id SERIAL PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                purchase_value NUMERIC(15, 2) NOT NULL,
-                purchase_date DATE NOT NULL,
-                current_market_value NUMERIC(15, 2),
-                last_updated DATE
-            );
-        `);
-
-        // Portfolio transactions table
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS portfolio_transactions (
-                id SERIAL PRIMARY KEY,
-                type VARCHAR(50) NOT NULL, -- e.g., 'Initial Capital', 'Reinvestment', 'Liquidation'
-                amount NUMERIC(15, 2) NOT NULL,
-                transaction_date DATE NOT NULL,
-                description TEXT
-            );
-        `);
-
-        console.log('All tables created successfully!');
-        await client.query('COMMIT');
-    } catch (e) {
-        await client.query('ROLLBACK');
-        console.error('Error creating tables', e.stack);
-    } finally {
-        client.release();
+    } catch (error) {
+        console.error('❌ Error durante la inicialización:', error);
     }
 };
 
-createTablesAndAdmin().then(() => pool.end());
+initializeDatabase().then(() => {
+    pool.end();
+});

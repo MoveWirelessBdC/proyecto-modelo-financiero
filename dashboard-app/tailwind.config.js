@@ -2,7 +2,9 @@
 export default {
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    // Esta línea ahora le dice a Tailwind que busque en la carpeta src
+    // y en TODAS sus subcarpetas (como pages, components, context, etc.)
+    "./src/**/*.{js,ts,jsx,tsx}", 
   ],
   theme: {
     extend: {},
