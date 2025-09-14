@@ -1,52 +1,68 @@
-// server/controllers/authController.js
-import bcryptjs from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import db from '../models/index.js';
 
-const User = db.User;
-const Role = db.Role;
-const Permission = db.Permission;
+const { User, Role, Permission } = db;
 
-export const login = async (req, res) => {
-    try {
+const authController = {
+    async login(req, res) {
         const { email, password } = req.body;
 
-        const user = await User.findOne({
-            where: { email },
-            include: {
-                model: Role,
-                include: [Permission]
+        try {
+            const user = await User.findOne({
+                where: { email },
+                include: [
+                    {
+                        model: Role,
+                        as: 'role',
+                        include: [{
+                            model: Permission,
+                            as: 'permissions',
+                            through: { attributes: [] }
+                        }]
+                    }
+                ]
+            });
+
+            if (!user) {
+                return res.status(404).json({ message: 'Usuario no encontrado' });
             }
-        });
 
-        if (!user) {
-            return res.status(404).send({ message: 'Error: Usuario no encontrado.' });
+            const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+            if (!isPasswordValid) {
+                return res.status(401).json({ message: 'Contraseña incorrecta' });
+            }
+
+            const permissions = user.role && user.role.permissions ? user.role.permissions.map(p => p.accion) : [];
+
+            const accessToken = jwt.sign(
+                {
+                    id: user.id,
+                    nombre: user.nombre_completo,
+                    rol: user.role ? user.role.nombre_rol : null,
+                    permissions: permissions
+                },
+                process.env.JWT_SECRET,
+                { expiresIn: '1h' }
+            );
+
+            res.json({ 
+                message: "Login exitoso",
+                accessToken,
+                user: {
+                    id: user.id,
+                    nombre: user.nombre_completo,
+                    email: user.email,
+                    rol: user.role ? user.role.nombre_rol : 'Sin rol',
+                    permissions
+                }
+            });
+
+        } catch (error) {
+            console.error("Error en el login:", error);
+            res.status(500).json({ message: 'Error interno del servidor' });
         }
-
-        const passwordIsValid = bcryptjs.compareSync(password, user.password_hash);
-        if (!passwordIsValid) {
-            return res.status(401).send({ message: '¡Contraseña inválida!' });
-        }
-
-        const permissions = user.Role.Permissions.map(p => p.accion);
-
-        const token = jwt.sign(
-            // El userId ahora se llama 'id' en el token para mayor claridad
-            { id: user.id, rol: user.Role.nombre_rol, permissions },
-            process.env.JWT_SECRET,
-            { expiresIn: 86400 } // Expira en 24 horas
-        );
-
-        res.status(200).send({
-            id: user.id,
-            nombre_completo: user.nombre_completo,
-            email: user.email,
-            rol: user.Role.nombre_rol,
-            accessToken: token
-        });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).send({ message: error.message });
     }
 };
+
+export default authController;

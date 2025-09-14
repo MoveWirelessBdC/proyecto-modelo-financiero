@@ -1,44 +1,63 @@
-// server/models/index.js
+'use strict';
+
 import { Sequelize, DataTypes } from 'sequelize';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import UserModel from './User.js';
+import RoleModel from './Role.js';
+import PermissionModel from './Permission.js';
 
-// Importar las funciones que definen los modelos
-import User from './User.js';
-import Role from './Role.js';
-import Permission from './Permission.js';
-
-// Configurar dotenv para encontrar el archivo .env en la carpeta raíz del proyecto
+// Configuración para encontrar la ruta del directorio actual en ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+// Apuntar dotenv al archivo .env en el directorio superior (la carpeta 'server')
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
-    dialect: 'postgres',
-    logging: false // Desactivamos los logs de SQL para una salida más limpia
+  dialect: 'postgres',
+  logging: false,
 });
 
 const db = {};
 
-// Inicializar los modelos pasándoles la instancia de sequelize
-db.User = User(sequelize, DataTypes);
-db.Role = Role(sequelize, DataTypes);
-db.Permission = Permission(sequelize, DataTypes);
-
-// Definir la tabla de unión (join table)
-db.Rol_Permisos = sequelize.define('Rol_Permisos', {}, { timestamps: false });
-
-// Crear las asociaciones entre las tablas
-db.Role.belongsToMany(db.Permission, { through: db.Rol_Permisos, foreignKey: 'rol_id' });
-db.Permission.belongsToMany(db.Role, { through: db.Rol_Permisos, foreignKey: 'permiso_id' });
-
-// La asociación que ya tenías en el modelo de User, la centralizamos aquí
-db.User.belongsTo(db.Role, { foreignKey: 'rol_id' });
-db.Role.hasMany(db.User, { foreignKey: 'rol_id' });
-
-db.sequelize = sequelize;
 db.Sequelize = Sequelize;
+db.sequelize = sequelize;
 
-// LA CORRECCIÓN CLAVE: Exportamos todo el objeto 'db' como el default
+db.User = UserModel(sequelize, DataTypes);
+db.Role = RoleModel(sequelize, DataTypes);
+db.Permission = PermissionModel(sequelize, DataTypes);
+
+db.Rol_Permisos = sequelize.define('Rol_Permisos', {
+  rol_id: {
+    type: DataTypes.INTEGER,
+    references: { model: db.Role, key: 'id' }
+  },
+  permiso_id: {
+    type: DataTypes.INTEGER,
+    references: { model: db.Permission, key: 'id' }
+  }
+}, {
+  tableName: 'rol_permisos',
+  timestamps: false
+});
+
+db.User.belongsTo(db.Role, { foreignKey: 'rol_id', as: 'role' });
+db.Role.hasMany(db.User, { foreignKey: 'rol_id', as: 'users' });
+
+db.Role.belongsToMany(db.Permission, {
+  through: db.Rol_Permisos,
+  foreignKey: 'rol_id',
+  otherKey: 'permiso_id',
+  as: 'permissions'
+});
+
+db.Permission.belongsToMany(db.Role, {
+  through: db.Rol_Permisos,
+  foreignKey: 'permiso_id',
+  otherKey: 'rol_id',
+  as: 'roles'
+});
+
 export default db;

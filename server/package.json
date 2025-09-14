@@ -6,7 +6,8 @@
   "type": "module",
 "scripts": {
   "start": "nodemon server.js",
-  "db:init": "node db/init.js"
+  "db:init": "node db/init.js",
+  "db:diagnose": "node db/diagnose.js"
 },
   "keywords": [],
   "author": "",

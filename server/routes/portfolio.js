@@ -21,7 +21,7 @@ router.get('/overview', authMiddleware, async (req, res) => {
     try {
         // 1. Calcular Valor Total de Activos
         console.log('[PASO 1] Calculando valor total de activos...');
-        const assetsValue = await pool.query('SELECT SUM(current_market_value) as total_value FROM portfolio_assets');
+        const assetsValue = await pool.query('SELECT SUM(value) as total_value FROM portfolio_assets');
         const totalMarketValue = parseFloat(assetsValue.rows[0].total_value) || 0;
         console.log(`  -> Resultado: ${totalMarketValue}`);
 

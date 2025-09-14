@@ -1,18 +1,25 @@
-// server/middleware/auth.js
+
 import jwt from 'jsonwebtoken';
 import pool from '../db/index.js';
 
 export const authMiddleware = async (req, res, next) => {
-    // ... (los console.log de diagnóstico no cambian)
     try {
         let token = req.headers['authorization'];
+
         if (!token || !token.startsWith('Bearer ')) {
             return res.status(401).send({ message: 'Acceso denegado: No se proveyó un token válido.' });
         }
+
         token = token.slice(7, token.length);
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = { id: decoded.userId }; // Corregimos aquí también, el token tiene userId
+        
+        // --- LA CORRECCIÓN ---
+        // El token que generamos al hacer login contiene 'id', no 'userId'.
+        // Este es el error que causa los fallos de permisos.
+        req.user = { id: decoded.id }; 
+        
         next();
+
     } catch (error) {
         console.error('[AUTH ERROR] El token es inválido o ha expirado.', error.message);
         return res.status(401).send({ message: 'No autorizado: Token inválido.' });
@@ -22,16 +29,19 @@ export const authMiddleware = async (req, res, next) => {
 export const checkPermission = (requiredPermission) => {
     return async (req, res, next) => {
         try {
-            // LA CORRECCIÓN ESTÁ EN ESTA CONSULTA
+            if (!req.user || !req.user.id) {
+                return res.status(401).send({ message: "No autorizado: ID de usuario no encontrado en la sesión." });
+            }
+
             const permissionsQuery = await pool.query(
                 `SELECT p.accion 
-                 FROM "Permissions" p
-                 JOIN "Rol_Permisos" rp ON p.id = rp.permiso_id
-                 WHERE rp.rol_id = (SELECT rol_id FROM "Users" WHERE id = $1)`,
+                 FROM permissions p
+                 JOIN rol_permisos rp ON p.id = rp.permiso_id
+                 WHERE rp.rol_id = (SELECT rol_id FROM users WHERE id = $1)`,
                 [req.user.id]
             );
             const userPermissions = permissionsQuery.rows.map(row => row.accion);
-
+            
             if (userPermissions && userPermissions.includes(requiredPermission)) {
                 next();
             } else {
