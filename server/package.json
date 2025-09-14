@@ -4,15 +4,17 @@
   "description": "Backend for the Leveraged Finance Portfolio Management App",
   "main": "index.js",
   "type": "module",
-"scripts": {
-  "start": "nodemon server.js",
-  "db:init": "node db/init.js",
-  "db:diagnose": "node db/diagnose.js"
-},
+  "scripts": {
+    "start": "nodemon server.js",
+    "db:init": "node db/init.js",
+    "db:diagnose": "node db/diagnose.js",
+    "update-prices": "node workers/marketDataUpdater.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.12.2",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",

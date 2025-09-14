@@ -1,71 +1,87 @@
-import express from 'express';
-import pool from '../db/index.js';
-import { authMiddleware, checkPermission } from '../middleware/auth.js';
+    // server/routes/portfolio.js
+    import express from 'express';
+    import pool from '../db/index.js';
+    import { authMiddleware, checkPermission } from '../middleware/auth.js';
 
-const router = express.Router();
+    const router = express.Router();
 
-// --- Portfolio Assets --- //
-// ... (El resto de las rutas de assets, transactions, etc. no necesitan cambios, las dejamos como están)
-router.get('/assets', [authMiddleware, checkPermission('portfolio:view')], async (req, res) => { /* ... */ });
-router.post('/assets', [authMiddleware, checkPermission('portfolio:edit')], async (req, res) => { /* ... */ });
-router.put('/assets/:id', [authMiddleware, checkPermission('portfolio:edit')], async (req, res) => { /* ... */ });
-router.delete('/assets/:id', [authMiddleware, checkPermission('portfolio:delete')], async (req, res) => { /* ... */ });
-router.get('/transactions', [authMiddleware, checkPermission('portfolio:view')], async (req, res) => { /* ... */ });
-router.post('/transactions', [authMiddleware, checkPermission('portfolio:edit')], async (req, res) => { /* ... */ });
+    // GET all assets
+    router.get('/assets', [authMiddleware, checkPermission('portfolio:view')], async (req, res) => {
+        try {
+            const assets = await pool.query('SELECT * FROM portfolio_assets ORDER BY purchase_date DESC');
+            res.json(assets.rows);
+        } catch (err) { console.error(err); res.status(500).send('Server Error'); }
+    });
 
+    // ADD a new asset
+    router.post('/assets', [authMiddleware, checkPermission('portfolio:edit')], async (req, res) => {
+        try {
+            const { name, ticker_symbol, purchase_value, purchase_date } = req.body;
+            const newAsset = await pool.query(
+                'INSERT INTO portfolio_assets (name, ticker_symbol, purchase_value, purchase_date, current_market_value, last_updated) VALUES ($1, $2, $3, $4, $5, NOW()) RETURNING *',
+                [name, ticker_symbol, purchase_value, purchase_date, purchase_value] // El valor actual es el mismo que el de compra inicialmente
+            );
+            res.status(201).json(newAsset.rows[0]);
+        } catch (err) { console.error(err); res.status(500).send('Server Error'); }
+    });
 
-// --- Portfolio Overview (VERSIÓN CON DIAGNÓSTICO) --- //
+    // UPDATE an asset's market value
+    router.put('/assets/:id', [authMiddleware, checkPermission('portfolio:edit')], async (req, res) => {
+        // ... (código para actualizar, lo implementaremos después)
+    });
 
-router.get('/overview', authMiddleware, async (req, res) => {
-    console.log('\n--- [INFO] Petición recibida para /api/portfolio/overview ---');
-    try {
-        // 1. Calcular Valor Total de Activos
-        console.log('[PASO 1] Calculando valor total de activos...');
-        const assetsValue = await pool.query('SELECT SUM(value) as total_value FROM portfolio_assets');
-        const totalMarketValue = parseFloat(assetsValue.rows[0].total_value) || 0;
-        console.log(`  -> Resultado: ${totalMarketValue}`);
+    // DELETE an asset
+    router.delete('/assets/:id', [authMiddleware, checkPermission('portfolio:delete')], async (req, res) => {
+        try {
+            const { id } = req.params;
+            await pool.query('DELETE FROM portfolio_assets WHERE id = $1', [id]);
+            res.status(204).send();
+        } catch (err) { console.error(err); res.status(500).send('Server Error'); }
+    });
 
-        // 2. Calcular Deuda Total
-        console.log('[PASO 2] Calculando deuda total...');
-        const debtResult = await pool.query(`
-            SELECT SUM(p.amount) - COALESCE(SUM(paid.principal_paid), 0) AS total_debt
-            FROM projects p
-            LEFT JOIN (
-                SELECT project_id, SUM(principal) as principal_paid
+    // La ruta de overview no cambia
+    router.get('/overview', authMiddleware, async (req, res) => {
+        try {
+            // 1. Valor total del portafolio de colateral
+            const portfolioValueResult = await pool.query('SELECT SUM(current_market_value) as total_market_value FROM portfolio_assets');
+            const totalMarketValue = parseFloat(portfolioValueResult.rows[0].total_market_value) || 0;
+
+            // 2. Deuda total activa
+            const totalDebtResult = await pool.query('SELECT SUM(r.remaining_balance) as total_debt FROM (SELECT project_id, MAX(remaining_balance) as remaining_balance FROM amortization_schedule WHERE status = \'Pending\' GROUP BY project_id) as r');
+            const totalDebt = parseFloat(totalDebtResult.rows[0].total_debt) || 0;
+
+            // 3. Ingresos por interés este mes
+            const interestIncomeResult = await pool.query(`
+                SELECT SUM(interest) as interest_this_month
                 FROM amortization_schedule
-                WHERE status = 'Paid'
-                GROUP BY project_id
-            ) paid ON p.id = paid.project_id
-        `);
-        const totalDebt = parseFloat(debtResult.rows[0].total_debt) || 0;
-        console.log(`  -> Resultado: ${totalDebt}`);
+                WHERE status = 'Paid' AND to_char(payment_date, 'YYYY-MM') = to_char(CURRENT_DATE, 'YYYY-MM')
+            `);
+            const interestIncomeThisMonth = parseFloat(interestIncomeResult.rows[0].interest_this_month) || 0;
 
-        // 3. Calcular LTV
-        console.log('[PASO 3] Calculando LTV...');
-        const ltv = totalMarketValue > 0 ? (totalDebt / totalMarketValue) * 100 : 0;
-        console.log(`  -> Resultado: ${ltv}`);
+            // 4. Pagos pendientes este mes
+            const pendingPaymentsResult = await pool.query(`
+                SELECT COUNT(*) as pending_payments
+                FROM amortization_schedule
+                WHERE status = 'Pending' AND to_char(payment_date, 'YYYY-MM') = to_char(CURRENT_DATE, 'YYYY-MM')
+            `);
+            const pendingPaymentsThisMonth = parseInt(pendingPaymentsResult.rows[0].pending_payments, 10) || 0;
 
-        // 4. Calcular otros KPIs
-        console.log('[PASO 4] Calculando otros KPIs (ingresos y pagos pendientes)...');
-        const interestIncome = await pool.query("SELECT SUM(interest) as monthly_interest FROM amortization_schedule WHERE payment_date >= date_trunc('month', CURRENT_DATE) AND payment_date < date_trunc('month', CURRENT_DATE) + interval '1 month' AND status = 'Paid'");
-        const pendingPayments = await pool.query("SELECT COUNT(*) as count FROM amortization_schedule WHERE payment_date >= date_trunc('month', CURRENT_DATE) AND payment_date < date_trunc('month', CURRENT_DATE) + interval '1 month' AND status = 'Pending'");
-        console.log('  -> KPIs calculados.');
+            // 5. Loan-to-Value (LTV)
+            const ltv = totalMarketValue > 0 ? (totalDebt / totalMarketValue) * 100 : 0;
 
-        console.log('--- [SUCCESS] Cálculo completado. Enviando respuesta al frontend. ---');
-        res.json({
-            totalMarketValue: totalMarketValue.toFixed(2),
-            totalDebt: totalDebt.toFixed(2),
-            ltv: ltv.toFixed(2),
-            interestIncomeThisMonth: (parseFloat(interestIncome.rows[0].monthly_interest) || 0).toFixed(2),
-            pendingPaymentsThisMonth: parseInt(pendingPayments.rows[0].count) || 0
-        });
+            res.json({
+                totalMarketValue: totalMarketValue.toFixed(2),
+                totalDebt: totalDebt.toFixed(2),
+                interestIncomeThisMonth: interestIncomeThisMonth.toFixed(2),
+                pendingPaymentsThisMonth,
+                ltv: ltv.toFixed(2)
+            });
 
-    } catch (err) {
-        // ESTA PARTE ES LA MÁS IMPORTANTE
-        console.error('\n--- [ERROR] ¡Ocurrió un error en la ruta /overview! ---');
-        console.error('Error detallado:', err); // Esto nos dará toda la información del error
-        res.status(500).send('Server Error');
-    }
-});
+        } catch (err) {
+            console.error('Error fetching dashboard overview:', err);
+            res.status(500).send('Server Error');
+        }
+    });
 
-export default router;
+    export default router;
+    

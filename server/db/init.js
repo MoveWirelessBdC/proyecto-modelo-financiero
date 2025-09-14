@@ -1,4 +1,3 @@
-
 // server/db/init.js
 import pool from './index.js';
 import bcrypt from 'bcryptjs';
@@ -72,9 +71,12 @@ const CREATE_TABLES_SQL = `
     
     CREATE TABLE portfolio_assets (
         id SERIAL PRIMARY KEY,
-        asset_type VARCHAR(100),
-        value NUMERIC(15, 2),
-        acquisition_date DATE
+        name VARCHAR(255) NOT NULL,
+        ticker_symbol VARCHAR(20),
+        purchase_value NUMERIC(15, 2) NOT NULL,
+        current_market_value NUMERIC(15, 2),
+        purchase_date DATE,
+        last_updated DATE
     );
 
     CREATE TABLE global_config (
