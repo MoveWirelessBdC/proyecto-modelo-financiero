@@ -9,6 +9,16 @@ La aplicación consta de dos partes principales:
 -   **Frontend:** Una aplicación de una sola página (SPA) construida con React y Vite. Se encuentra en el directorio `dashboard-app`.
 -   **Backend:** Una API RESTful construida con Node.js y Express. Se encuentra en el directorio `server`.
 -   **Base de Datos:** PostgreSQL, gestionada a través de Docker para facilitar la configuración.
+-   **Procesos en Segundo Plano:** Un worker de Node.js para tareas programadas, como la actualización de datos de mercado.
+
+## Características Principales
+
+-   **Autenticación y Autorización:** Sistema de usuarios con roles y permisos.
+-   **Gestión de Clientes:** Creación, edición y visualización de clientes.
+-   **Gestión de Proyectos de Financiamiento:** Creación de préstamos con cálculo de tablas de amortización.
+-   **Gestión de Portafolio de Colateral:** Administración de activos que respaldan la operación.
+-   **Dashboard Dinámico:** Visualización en tiempo real de los KPIs más importantes del negocio, como el Loan-to-Value (LTV).
+-   **Actualización Automática de Datos de Mercado:** Un worker actualiza periódicamente el valor de los activos del portafolio utilizando la API de FinancialModelingPrep.
 
 ## Cómo Empezar
 
@@ -35,7 +45,11 @@ cd server
 cp .env.example .env
 ```
 
-No necesitas modificar el archivo `.env` para el entorno de desarrollo local, ya que las credenciales por defecto coinciden con las del servicio de Docker.
+**Importante:** Para la actualización de datos de mercado, debes obtener una API Key gratuita de [FinancialModelingPrep](https://site.financialmodelingprep.com/developer/) y añadirla a tu archivo `.env`:
+
+```
+FMP_API_KEY=TU_API_KEY_AQUI
+```
 
 ### 3. Instalar Dependencias
 
@@ -94,8 +108,8 @@ La aplicación estará disponible en `http://localhost:5173`.
 
 Una vez que la aplicación esté en funcionamiento, puedes iniciar sesión con las credenciales del administrador creado automáticamente:
 
--   **Usuario:** `admin`
--   **Contraseña:** `password`
+-   **Usuario:** `admin@app.com`
+-   **Contraseña:** `supersecretpassword`
 
 Desde allí, podrás explorar las diferentes secciones:
 
