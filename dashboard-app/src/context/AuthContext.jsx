@@ -1,36 +1,53 @@
 // dashboard-app/src/context/AuthContext.jsx
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/api'; // Import the configured api instance
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true); // Add a loading state
 
     useEffect(() => {
-        // Al cargar la app, revisa si hay un token en localStorage
-        const token = localStorage.getItem('accessToken');
-        if (token) {
-            // Si hay token, podríamos decodificarlo para obtener info del usuario
-            // Por ahora, solo asumimos que está logueado
-            setUser({ token }); 
-        }
+        const fetchUser = async () => {
+            const token = localStorage.getItem('accessToken');
+            if (token) {
+                try {
+                    // Use the api instance which has the interceptor
+                    const response = await api.get('/auth/me'); 
+                    setUser(response.data.user);
+                } catch (error) {
+                    console.error("Failed to fetch user", error);
+                    localStorage.removeItem('accessToken'); // Token is invalid
+                    setUser(null);
+                }
+            }
+            setLoading(false);
+        };
+
+        fetchUser();
     }, []);
 
     const login = async (email, password) => {
-        const response = await axios.post('http://localhost:3001/api/auth/login', {
+        // Use the api instance
+        const response = await api.post('/auth/login', {
             email,
             password
         });
-        const { accessToken, ...userData } = response.data;
+        const { accessToken, user } = response.data;
         localStorage.setItem('accessToken', accessToken);
-        setUser(userData);
+        setUser(user);
     };
 
     const logout = () => {
         localStorage.removeItem('accessToken');
         setUser(null);
     };
+
+    // Don't render children until we've checked for a user
+    if (loading) {
+        return <div>Loading...</div>; // Or a proper spinner component
+    }
 
     return (
         <AuthContext.Provider value={{ user, login, logout }}>

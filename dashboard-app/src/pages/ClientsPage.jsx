@@ -92,7 +92,6 @@ const ClientsPage = () => {
                 </form>
             </div>
 
-            {/* Tabla de clientes existentes */}
             <h3>Lista de Clientes</h3>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
@@ -100,14 +99,16 @@ const ClientsPage = () => {
                         <th style={{ padding: '10px', textAlign: 'left' }}>ID</th>
                         <th style={{ padding: '10px', textAlign: 'left' }}>Nombre</th>
                         <th style={{ padding: '10px', textAlign: 'left' }}>Contacto</th>
+                        <th style={{ padding: '10px', textAlign: 'left' }}>Propietario</th> {/* <-- NUEVA COLUMNA */}
                     </tr>
                 </thead>
                 <tbody>
                     {clients.map(client => (
-                        <tr key={client.id} style={{ borderBottom: '1p`x solid #ddd' }}>
+                        <tr key={client.id} style={{ borderBottom: '1px solid #ddd' }}>
                             <td style={{ padding: '10px' }}>{client.id}</td>
                             <td style={{ padding: '10px' }}>{client.name}</td>
                             <td style={{ padding: '10px' }}>{client.contact_info}</td>
+                            <td style={{ padding: '10px' }}>{client.owner_name || 'N/A'}</td> {/* <-- NUEVO DATO */}
                         </tr>
                     ))}
                 </tbody>

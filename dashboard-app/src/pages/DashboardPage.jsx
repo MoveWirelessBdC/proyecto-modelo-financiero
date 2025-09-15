@@ -1,37 +1,6 @@
 // dashboard-app/src/pages/DashboardPage.jsx
 import React, { useState, useEffect } from 'react';
-import api from '../api/api'; // Usamos nuestro nuevo cliente de API
-
-const KPICard = ({ title, value }) => (
-    <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px', textAlign: 'center' }}>
-        <h3 style={{ margin: 0, color: '#555' }}>{title}</h3>
-        <p style={{ fontSize: '2em', margin: '10px 0 0 0', fontWeight: 'bold' }}>
-            {typeof value === 'number' ? `$${value.toLocaleString('en-US')}` : value}
-        </p>
-    </div>
-);
-
-const RiskGauge = ({ ltv }) => {
-    let color = 'green';
-    let level = 'Óptimo';
-
-    if (ltv > 80) {
-        color = 'red';
-        level = 'Defensivo';
-    } else if (ltv > 65) {
-        color = 'orange';
-        level = 'Consolidación';
-    }
-
-    return (
-        <div style={{ border: `3px solid ${color}`, padding: '20px', borderRadius: '8px', textAlign: 'center' }}>
-            <h3 style={{ margin: 0, color: '#555' }}>Loan-to-Value (LTV)</h3>
-            <p style={{ fontSize: '3em', margin: '10px 0', fontWeight: 'bold', color }}>{ltv}%</p>
-            <p style={{ margin: 0, fontSize: '1.2em', color }}>Nivel: {level}</p>
-        </div>
-    );
-};
-
+import api from '../api/api';
 
 const DashboardPage = () => {
     const [data, setData] = useState(null);
@@ -45,34 +14,64 @@ const DashboardPage = () => {
                 setData(response.data);
             } catch (err) {
                 setError('No se pudieron cargar los datos del dashboard.');
-                console.error(err);
             } finally {
                 setLoading(false);
             }
         };
-
         fetchOverview();
-    }, []); // El array vacío asegura que se ejecute solo una vez, al cargar el componente
+    }, []);
 
-    if (loading) {
-        return <h1>Cargando KPIs...</h1>;
+    const getLtvColor = (ltv) => {
+        if (ltv > 80) return 'text-red-500';
+        if (ltv > 65) return 'text-orange-500';
+        return 'text-green-600';
+    };
+
+    const getLtvLevel = (ltv) => {
+        if (ltv > 80) return 'Defensivo';
+        if (ltv > 65) return 'Consolidación';
+        return 'Óptimo';
     }
 
-    if (error) {
-        return <h1 style={{ color: 'red' }}>{error}</h1>;
-    }
+    if (loading) return <div className="p-8"><h1>Cargando...</h1></div>;
+    if (error) return <div className="p-8"><h1 className="text-red-500">{error}</h1></div>;
+
+    const ltvValue = parseFloat(data.ltv);
 
     return (
-        <div>
-            <h1>Dashboard Principal</h1>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
-                <RiskGauge ltv={parseFloat(data.ltv)} />
-                
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                    <KPICard title="Valor del Portafolio" value={parseFloat(data.totalMarketValue)} />
-                    <KPICard title="Deuda Total" value={parseFloat(data.totalDebt)} />
-                    <KPICard title="Ingresos por Interés (Mes)" value={parseFloat(data.interestIncomeThisMonth)} />
-                    <KPICard title="Pagos Pendientes (Mes)" value={parseInt(data.pendingPaymentsThisMonth, 10)} />
+        <div className="p-8">
+            <h1 className="text-3xl font-light text-gray-800 mb-12">Dashboard</h1>
+            
+            <div className="grid grid-cols-3 gap-8">
+                {/* Foco Principal: LTV */}
+                <div className="col-span-1 flex flex-col justify-center items-center p-6 bg-white rounded-lg border border-gray-200">
+                    <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Loan-to-Value (LTV)</h2>
+                    <p className={`text-7xl font-light mt-2 ${getLtvColor(ltvValue)}`}>
+                        {ltvValue.toFixed(2)}%
+                    </p>
+                    <p className={`mt-2 text-lg ${getLtvColor(ltvValue)}`}>
+                        Nivel: {getLtvLevel(ltvValue)}
+                    </p>
+                </div>
+
+                {/* KPIs Secundarios */}
+                <div className="col-span-2 grid grid-cols-2 gap-8">
+                    <div className="p-6 bg-white rounded-lg border border-gray-200">
+                        <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Valor del Portafolio</h3>
+                        <p className="text-4xl font-medium text-gray-800 mt-2">${parseFloat(data.totalMarketValue).toLocaleString('en-US')}</p>
+                    </div>
+                     <div className="p-6 bg-white rounded-lg border border-gray-200">
+                        <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Deuda Total</h3>
+                        <p className="text-4xl font-medium text-gray-800 mt-2">${parseFloat(data.totalDebt).toLocaleString('en-US')}</p>
+                    </div>
+                     <div className="p-6 bg-white rounded-lg border border-gray-200">
+                        <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Ingresos por Interés (Mes)</h3>
+                        <p className="text-4xl font-medium text-gray-800 mt-2">${parseFloat(data.interestIncomeThisMonth).toLocaleString('en-US')}</p>
+                    </div>
+                     <div className="p-6 bg-white rounded-lg border border-gray-200">
+                        <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Pagos Pendientes (Mes)</h3>
+                        <p className="text-4xl font-medium text-gray-800 mt-2">{data.pendingPaymentsThisMonth}</p>
+                    </div>
                 </div>
             </div>
         </div>

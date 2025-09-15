@@ -19,6 +19,14 @@ La aplicación consta de dos partes principales:
 -   **Gestión de Portafolio de Colateral:** Administración de activos que respaldan la operación.
 -   **Dashboard Dinámico:** Visualización en tiempo real de los KPIs más importantes del negocio, como el Loan-to-Value (LTV).
 -   **Actualización Automática de Datos de Mercado:** Un worker actualiza periódicamente el valor de los activos del portafolio utilizando la API de FinancialModelingPrep.
+-   **Módulo CRM (Gestión de Oportunidades):**
+    -   **Pipeline Visual:** Tablero Kanban interactivo para la gestión de oportunidades de venta.
+    -   **Creación de Oportunidades:** Formulario modal para añadir nuevas oportunidades.
+    -   **Gestión de Columnas:**
+        -   Títulos de columnas editables.
+        -   Creación de nuevas columnas (etapas).
+        -   Archivo de columnas existentes.
+    -   **Etiquetas de Colores:** Asignación de etiquetas personalizables a las oportunidades para una identificación visual rápida.
 
 ## Cómo Empezar
 
@@ -118,3 +126,4 @@ Desde allí, podrás explorar las diferentes secciones:
 -   **Projects:** Gestionar proyectos de financiamiento.
 -   **Portfolio:** Gestionar los activos del portafolio.
 -   **Configuración:** Establecer los parámetros globales de la aplicación.
+-   **CRM Pipeline:** Accede al nuevo módulo de gestión de oportunidades de venta.

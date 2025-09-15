@@ -1,15 +1,51 @@
 import express from 'express';
 import pool from '../db/index.js';
-// CAMBIO: Importamos la herramienta para verificar permisos
 import { authMiddleware, checkPermission } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// GET all clients
+// GET all clients (con lógica de propiedad)
 router.get('/', [authMiddleware, checkPermission('clients:view')], async (req, res) => {
     try {
-        const allClients = await pool.query('SELECT * FROM clients ORDER BY name ASC');
+        let query;
+        const queryParams = [];
+        
+        // Consulta base que une clientes con usuarios para obtener el nombre del propietario
+        const baseQuery = `
+            SELECT c.*, u.nombre_completo as owner_name 
+            FROM clients c
+            LEFT JOIN users u ON c.owner_id = u.id
+        `;
+
+        // Si el rol es 'Equipo Comercial', filtramos por su ID
+        if (req.user.rol === 'Equipo Comercial') {
+            query = `${baseQuery} WHERE c.owner_id = $1 ORDER BY c.name ASC`;
+            queryParams.push(req.user.id);
+        } else {
+            // Si es Admin o Contable, ve todos los clientes
+            query = `${baseQuery} ORDER BY c.name ASC`;
+        }
+        
+        const allClients = await pool.query(query, queryParams);
         res.json(allClients.rows);
+    } catch (err) {
+        console.error("Error fetching clients:", err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+// CREATE a new client (asignando propietario)
+router.post('/', [authMiddleware, checkPermission('clients:create')], async (req, res) => {
+    try {
+        const { name, contact_info } = req.body;
+        const ownerId = req.user.id; // Obtenemos el ID del usuario logueado
+        
+        const newClient = await pool.query(
+            'INSERT INTO clients (name, contact_info, owner_id) VALUES ($1, $2, $3) RETURNING *',
+            [name, contact_info, ownerId]
+        );
+
+        res.status(201).json(newClient.rows[0]);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
@@ -25,21 +61,6 @@ router.get('/:id', [authMiddleware, checkPermission('clients:view')], async (req
             return res.status(404).json({ message: 'Client not found' });
         }
         res.json(client.rows[0]);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
-    }
-});
-
-// CREATE a new client
-router.post('/', [authMiddleware, checkPermission('clients:create')], async (req, res) => {
-    try {
-        const { name, contact_info } = req.body;
-        const newClient = await pool.query(
-            'INSERT INTO clients (name, contact_info) VALUES ($1, $2) RETURNING *',
-            [name, contact_info]
-        );
-        res.status(201).json(newClient.rows[0]);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
@@ -82,5 +103,6 @@ router.delete('/:id', [authMiddleware, checkPermission('clients:delete')], async
         res.status(500).send('Server error');
     }
 });
+
 
 export default router;

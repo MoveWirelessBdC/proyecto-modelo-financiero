@@ -62,6 +62,45 @@ const authController = {
             console.error("Error en el login:", error);
             res.status(500).json({ message: 'Error interno del servidor' });
         }
+    },
+
+    async getMe(req, res) {
+        try {
+            const user = await User.findOne({
+                where: { id: req.user.id },
+                include: [
+                    {
+                        model: Role,
+                        as: 'role',
+                        include: [{
+                            model: Permission,
+                            as: 'permissions',
+                            through: { attributes: [] }
+                        }]
+                    }
+                ]
+            });
+
+            if (!user) {
+                return res.status(404).json({ message: 'Usuario no encontrado' });
+            }
+
+            const permissions = user.role && user.role.permissions ? user.role.permissions.map(p => p.accion) : [];
+
+            res.json({
+                user: {
+                    id: user.id,
+                    nombre: user.nombre_completo,
+                    email: user.email,
+                    rol: user.role ? user.role.nombre_rol : 'Sin rol',
+                    permissions
+                }
+            });
+
+        } catch (error) {
+            console.error("Error en getMe:", error);
+            res.status(500).json({ message: 'Error interno del servidor' });
+        }
     }
 };
 
