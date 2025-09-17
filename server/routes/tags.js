@@ -29,19 +29,4 @@ router.post('/', [authMiddleware, checkPermission('tags:manage')], async (req, r
     }
 });
 
-// POST /api/opportunities/:id/tags - Asignar una etiqueta a una oportunidad
-router.post('/:opportunityId/tags', [authMiddleware, checkPermission('opportunities:edit')], async (req, res) => {
-    const { opportunityId } = req.params;
-    const { tag_id } = req.body;
-    try {
-        await pool.query(
-            'INSERT INTO opportunity_tags (opportunity_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-            [opportunityId, tag_id]
-        );
-        res.status(201).send();
-    } catch (err) {
-        res.status(500).json({ message: 'Error interno del servidor.' });
-    }
-});
-
 export default router;

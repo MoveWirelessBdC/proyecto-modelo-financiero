@@ -55,10 +55,18 @@ const updateMarketData = async () => {
                     const latestDate = Object.keys(timeSeries)[0]; // Obtenemos la fecha más reciente
                     const latestPrice = timeSeries[latestDate]['4. close']; // Obtenemos el precio de cierre
                     
+                    // 1. Actualizar el valor actual del activo
                     await client.query(
                         'UPDATE portfolio_assets SET current_market_value = $1, last_updated = NOW() WHERE id = $2',
                         [latestPrice, asset.id]
                     );
+
+                    // 2. Insertar el registro histórico (si no existe para hoy)
+                    await client.query(
+                        'INSERT INTO asset_value_history (asset_id, record_date, market_value) VALUES ($1, CURRENT_DATE, $2) ON CONFLICT (asset_id, record_date) DO NOTHING',
+                        [asset.id, latestPrice]
+                    );
+
                     updatedCount++;
                     console.log(`  -> ${ticker} actualizado a $${latestPrice} (precio de cierre de ${latestDate})`);
                 } else {
@@ -82,7 +90,8 @@ const updateMarketData = async () => {
         console.error('--- ❌ Ocurrió un error general en el worker ---', error);
     } finally {
         if (client) client.release();
-        pool.end();
+        // No finalices el pool aquí para que pueda ser reutilizado por otras partes de la aplicación.
+        // pool.end();
     }
 };
 

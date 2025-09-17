@@ -188,4 +188,35 @@ router.delete('/:id', [authMiddleware, checkPermission('opportunities:delete')],
     }
 });
 
+// POST /api/opportunities/:id/tags - Asignar una etiqueta a una oportunidad
+router.post('/:id/tags', [authMiddleware, checkPermission('opportunities:edit')], async (req, res) => {
+    const { id } = req.params;
+    const { tag_id } = req.body;
+    try {
+        await pool.query(
+            'INSERT INTO opportunity_tags (opportunity_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [id, tag_id]
+        );
+        res.status(201).send();
+    } catch (err) {
+        console.error('Error assigning tag:', err);
+        res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+});
+
+// DELETE /api/opportunities/:id/tags/:tagId - Desasignar una etiqueta de una oportunidad
+router.delete('/:id/tags/:tagId', [authMiddleware, checkPermission('opportunities:edit')], async (req, res) => {
+    const { id, tagId } = req.params;
+    try {
+        await pool.query(
+            'DELETE FROM opportunity_tags WHERE opportunity_id = $1 AND tag_id = $2',
+            [id, tagId]
+        );
+        res.status(204).send();
+    } catch (err) {
+        console.error('Error unassigning tag:', err);
+        res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+});
+
 export default router;

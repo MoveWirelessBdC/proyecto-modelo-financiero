@@ -12,6 +12,7 @@ import authRoutes from './routes/authRoutes.js';
 import clientRoutes from './routes/clients.js';
 import projectRoutes from './routes/projects.js';
 import portfolioRoutes from './routes/portfolio.js';
+import dashboardRoutes from './routes/dashboard.js'; // <-- NUEVA LÍNEA
 import configRoutes from './routes/config.js';
 import userRoutes from './routes/users.js';
 import roleRoutes from './routes/roles.js';
@@ -37,6 +38,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/dashboard', dashboardRoutes); // <-- NUEVA LÍNEA
 app.use('/api/config', configRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);

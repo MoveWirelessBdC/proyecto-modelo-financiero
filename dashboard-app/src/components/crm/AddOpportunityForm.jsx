@@ -8,7 +8,7 @@ const AddOpportunityForm = ({ onSuccess, onClose, stageId }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [suggestedUsers, setSuggestedUsers] = useState([]);
     const [selectedMembers, setSelectedMembers] = useState([]);
-    const [formData, setFormData] = useState({ name: '', client_id: '', stage_id: stageId || '', potential_amount: '', teamMembers: [] });
+    const [formData, setFormData] = useState({ name: '', client_id: '', stage_id: stageId || '', potential_amount: '' });
     const [submitError, setSubmitError] = useState('');
     const [loadingError, setLoadingError] = useState('');
 
@@ -62,14 +62,12 @@ const AddOpportunityForm = ({ onSuccess, onClose, stageId }) => {
 
     const handleSelectMember = (user) => {
         setSelectedMembers([...selectedMembers, user]);
-        setFormData(prev => ({ ...prev, teamMembers: [...prev.teamMembers, user.id] }));
         setSearchTerm('');
         setSuggestedUsers([]);
     };
 
     const handleRemoveMember = (userId) => {
         setSelectedMembers(selectedMembers.filter(member => member.id !== userId));
-        setFormData(prev => ({ ...prev, teamMembers: prev.teamMembers.filter(id => id !== userId) }));
     };
 
     const handleSubmit = async e => {
@@ -82,7 +80,11 @@ const AddOpportunityForm = ({ onSuccess, onClose, stageId }) => {
         }
 
         try {
-            await api.post('/opportunities', formData);
+            const submissionData = {
+                ...formData,
+                teamMembers: selectedMembers.map(member => member.id)
+            };
+            await api.post('/opportunities', submissionData);
             onSuccess(); // Cierra el modal y refresca el pipeline
         } catch (err) {
             console.error("Error creating opportunity:", err);
