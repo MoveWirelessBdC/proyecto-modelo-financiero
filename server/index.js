@@ -18,6 +18,10 @@ import roleRoutes from './routes/roles.js';
 import opportunityRoutes from './routes/opportunities.js';
 import stageRoutes from './routes/pipelineStages.js';
 import tagRoutes from './routes/tags.js'; // <-- NUEVA LÍNEA
+import opportunityMembersRoutes from './routes/opportunityMembers.js';
+import checklistItemsRoutes from './routes/checklistItems.js';
+import activitiesRoutes from './routes/activities.js';
+
 
 // --- CONFIGURACIÓN DEL SERVIDOR ---
 dotenv.config();
@@ -39,6 +43,9 @@ app.use('/api/roles', roleRoutes);
 app.use('/api/opportunities', opportunityRoutes);
 app.use('/api/stages', stageRoutes); // <-- Asegurándonos de que esta línea esté aquí
 app.use('/api/tags', tagRoutes); // <-- NUEVA LÍNEA
+app.use('/api/opportunities/:opportunityId/members', opportunityMembersRoutes);
+app.use('/api', checklistItemsRoutes);
+app.use('/api/opportunities/:opportunityId/activities', activitiesRoutes);
 
 // --- INICIO DEL SERVIDOR ---
 app.listen(PORT, () => {

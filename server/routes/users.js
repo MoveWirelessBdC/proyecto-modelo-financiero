@@ -6,13 +6,31 @@ import { authMiddleware, checkPermission } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// GET /api/users - Obtiene todos los usuarios
-router.get('/', [authMiddleware, checkPermission('users:view')], async (req, res) => {
+// GET /api/users - Obtiene todos los usuarios o busca por término
+router.get('/', authMiddleware, async (req, res) => {
+    const { search } = req.query;
+
     try {
-        const users = await pool.query('SELECT u.id, u.nombre_completo, u.email, r.nombre_rol FROM users u JOIN roles r ON u.rol_id = r.id ORDER BY u.id');
-        res.json(users.rows);
+        if (search) {
+            const query = `
+                SELECT id, nombre_completo as name, email FROM users
+                WHERE (nombre_completo ILIKE $1 OR email ILIKE $1)
+                ORDER BY nombre_completo
+                LIMIT 10
+            `;
+            const { rows } = await pool.query(query, [`%${search}%`]);
+            // The frontend expects 'name', so we alias 'nombre_completo'
+            return res.json(rows);
+        }
+
+        // Si no es búsqueda, es para la lista completa, aplicamos permisos más estrictos
+        checkPermission('users:view')(req, res, async () => {
+            const { rows } = await pool.query('SELECT u.id, u.nombre_completo, u.email, r.nombre_rol FROM users u JOIN roles r ON u.rol_id = r.id ORDER BY u.id');
+            res.json(rows.map(u => ({...u, name: u.nombre_completo}))); // Mapear a 'name' para consistencia
+        });
+
     } catch (err) {
-        console.error(err);
+        console.error('Error fetching users:', err);
         res.status(500).send('Server Error');
     }
 });

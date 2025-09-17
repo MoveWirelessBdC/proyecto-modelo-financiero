@@ -1,8 +1,11 @@
 // dashboard-app/src/pages/DashboardPage.jsx
 import React, { useState, useEffect } from 'react';
 import api from '../api/api';
+import { useAuth } from '../context/AuthContext';
+import TeamDashboard from '../components/TeamDashboard'; // Importamos el nuevo dashboard
 
-const DashboardPage = () => {
+// El dashboard original para roles de gestión y observación
+const GeneralDashboard = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -33,17 +36,16 @@ const DashboardPage = () => {
         return 'Óptimo';
     }
 
-    if (loading) return <div className="p-8"><h1>Cargando...</h1></div>;
+    if (loading) return <div className="p-8"><h1>Cargando Dashboard General...</h1></div>;
     if (error) return <div className="p-8"><h1 className="text-red-500">{error}</h1></div>;
 
     const ltvValue = parseFloat(data.ltv);
 
     return (
         <div className="p-8">
-            <h1 className="text-3xl font-light text-gray-800 mb-12">Dashboard</h1>
+            <h1 className="text-3xl font-light text-gray-800 mb-12">Dashboard General</h1>
             
             <div className="grid grid-cols-3 gap-8">
-                {/* Foco Principal: LTV */}
                 <div className="col-span-1 flex flex-col justify-center items-center p-6 bg-white rounded-lg border border-gray-200">
                     <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Loan-to-Value (LTV)</h2>
                     <p className={`text-7xl font-light mt-2 ${getLtvColor(ltvValue)}`}>
@@ -54,7 +56,6 @@ const DashboardPage = () => {
                     </p>
                 </div>
 
-                {/* KPIs Secundarios */}
                 <div className="col-span-2 grid grid-cols-2 gap-8">
                     <div className="p-6 bg-white rounded-lg border border-gray-200">
                         <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">Valor del Portafolio</h3>
@@ -76,6 +77,23 @@ const DashboardPage = () => {
             </div>
         </div>
     );
+};
+
+// Componente principal que actúa como selector
+const DashboardPage = () => {
+    const { user, isLoading } = useAuth();
+
+    if (isLoading) {
+        return <div className="p-8"><h1>Cargando...</h1></div>;
+    }
+
+    // Lógica de selección de dashboard
+    if (user && user.rol === 'Team Member') {
+        return <TeamDashboard />;
+    }
+
+    // Para todos los demás roles (Owner, Admin, Manager, Observer), muestra el dashboard general
+    return <GeneralDashboard />;
 };
 
 export default DashboardPage;
