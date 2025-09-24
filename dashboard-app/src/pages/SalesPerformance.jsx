@@ -64,47 +64,193 @@ const SalesPerformance = () => {
         return <div className="text-center text-red-500">{error}</div>;
     }
 
-    return (
-        <div className="bg-gray-900 text-white p-4 md:p-6 rounded-lg">
-            <h2 className="text-2xl font-bold text-white mb-6">Zona de Rendimiento Comercial</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Embudo de Ventas */}
-                <div className="glass-card p-4 rounded-xl">
-                    <h3 className="text-lg font-semibold mb-4">Embudo de Ventas (Este Trimestre)</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <FunnelChart>
-                            <Tooltip 
-                                contentStyle={{ backgroundColor: '#1F2937', border: 'none', borderRadius: '0.5rem' }}
-                                formatter={(value) => new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'USD' }).format(value)}
-                            />
-                            <Funnel dataKey="value" data={pipelineData} isAnimationActive>
-                                <LabelList position="right" fill="#F9FAFB" stroke="none" dataKey="name" />
-                            </Funnel>
-                        </FunnelChart>
-                    </ResponsiveContainer>
-                </div>
+    const totalPipelineValue = pipelineData?.reduce((acc, stage) => acc + stage.value, 0) || 0;
+    const conversionRate = pipelineData && pipelineData.length >= 2 ? 
+        (pipelineData[pipelineData.length - 1]?.value / pipelineData[0]?.value * 100) : 0;
+    const topPerformer = performanceData && performanceData.length > 0 ? 
+        performanceData.reduce((prev, current) => (prev.value > current.value) ? prev : current) : null;
 
-                {/* Proyectos Activos por Vendedor */}
-                <div className="glass-card p-4 rounded-xl">
-                    <h3 className="text-lg font-semibold mb-4">Cartera Activa por Vendedor</h3>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={performanceData} layout="vertical">
-                            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                            <XAxis type="number" stroke="#9CA3AF" tickFormatter={formatCurrency} />
-                            <YAxis type="category" dataKey="name" stroke="#9CA3AF" width={80} />
-                            <Tooltip 
-                                contentStyle={{ backgroundColor: '#1F2937', border: 'none', borderRadius: '0.5rem' }}
-                                formatter={(value) => new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'USD' }).format(value)}
-                            />
-                            <Bar dataKey="value" name="Cartera Activa">
-                                {performanceData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
+    return (
+        <div className="bg-gradient-to-br from-green-950 via-emerald-900 to-green-900 text-white p-6 rounded-2xl shadow-2xl border border-green-800/30">
+            {/* Header con métricas de pipeline */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
+                <div>
+                    <h2 className="text-3xl font-bold text-white mb-2">🎯 Rendimiento Comercial</h2>
+                    <p className="text-green-200 text-sm">Motor de crecimiento del negocio - Desempeño del equipo</p>
+                </div>
+                <div className="flex gap-4 mt-4 md:mt-0">
+                    <div className="bg-green-900/50 rounded-xl px-4 py-3 border border-green-700/30">
+                        <div className="text-xs text-green-300 mb-1">Pipeline Total</div>
+                        <div className="text-lg font-bold text-white">
+                            {formatCurrency(totalPipelineValue)}
+                        </div>
+                    </div>
+                    {conversionRate > 0 && (
+                        <div className="bg-emerald-900/50 rounded-xl px-4 py-3 border border-emerald-700/30">
+                            <div className="text-xs text-emerald-300 mb-1">Tasa Conversión</div>
+                            <div className="text-lg font-bold text-emerald-400">
+                                {conversionRate.toFixed(1)}%
+                            </div>
+                        </div>
+                    )}
+                    {topPerformer && (
+                        <div className="bg-yellow-900/50 rounded-xl px-4 py-3 border border-yellow-700/30">
+                            <div className="text-xs text-yellow-300 mb-1">Top Vendedor</div>
+                            <div className="text-lg font-bold text-yellow-400">
+                                {topPerformer.name.split(' ')[0]}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-7 gap-6">
+                {/* Embudo de Ventas - Más espacio */}
+                <div className="xl:col-span-4 bg-emerald-800/50 p-6 rounded-xl border border-emerald-600/30">
+                    <div className="mb-6">
+                        <h3 className="text-xl font-semibold text-white mb-1">📈 Pipeline de Ventas</h3>
+                        <p className="text-sm text-emerald-400">Flujo de oportunidades por etapa del proceso</p>
+                    </div>
+                    {pipelineData && pipelineData.length > 0 ? (
+                        <div>
+                            <ResponsiveContainer width="100%" height={320}>
+                                <FunnelChart>
+                                    <Tooltip 
+                                        contentStyle={{ 
+                                            backgroundColor: '#064e3b', 
+                                            border: 'none', 
+                                            borderRadius: '0.75rem',
+                                            color: '#fff'
+                                        }}
+                                        formatter={(value) => new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'USD' }).format(value)}
+                                    />
+                                    <Funnel dataKey="value" data={pipelineData} isAnimationActive>
+                                        <LabelList position="center" fill="#ffffff" stroke="none" dataKey="name" fontSize={12} />
+                                    </Funnel>
+                                </FunnelChart>
+                            </ResponsiveContainer>
+                            {/* Métricas del embudo */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+                                {pipelineData.map((stage, index) => (
+                                    <div key={index} className="bg-emerald-700/30 rounded-lg p-3 text-center">
+                                        <div className="text-xs text-emerald-300 mb-1">{stage.name}</div>
+                                        <div className="text-sm font-bold text-white">
+                                            {formatCurrency(stage.value)}
+                                        </div>
+                                        {index > 0 && (
+                                            <div className="text-xs text-emerald-400 mt-1">
+                                                {((stage.value / pipelineData[0].value) * 100).toFixed(0)}%
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center h-80 text-emerald-400">
+                            <div className="text-center">
+                                <div className="text-4xl mb-2">🎯</div>
+                                <p>No hay datos de pipeline disponibles</p>
+                                <p className="text-xs mt-1">Las métricas se mostrarán cuando haya oportunidades activas</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Performance por Vendedor */}
+                <div className="xl:col-span-3 bg-emerald-800/50 p-6 rounded-xl border border-emerald-600/30">
+                    <div className="mb-6">
+                        <h3 className="text-xl font-semibold text-white mb-1">👥 Performance Individual</h3>
+                        <p className="text-sm text-emerald-400">Cartera activa por miembro del equipo</p>
+                    </div>
+                    {performanceData && performanceData.length > 0 ? (
+                        <div>
+                            <ResponsiveContainer width="100%" height={280}>
+                                <BarChart data={performanceData} layout="vertical" margin={{ left: 80 }}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#059669" opacity={0.3} />
+                                    <XAxis type="number" stroke="#6ee7b7" tickFormatter={formatCurrency} fontSize={11} />
+                                    <YAxis type="category" dataKey="name" stroke="#6ee7b7" width={80} fontSize={11} />
+                                    <Tooltip 
+                                        contentStyle={{ 
+                                            backgroundColor: '#064e3b', 
+                                            border: 'none', 
+                                            borderRadius: '0.75rem',
+                                            color: '#fff'
+                                        }}
+                                        formatter={(value) => new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'USD' }).format(value)}
+                                    />
+                                    <Bar dataKey="value" name="Cartera Activa" radius={4}>
+                                        {performanceData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                            {/* Rankings */}
+                            <div className="mt-4 space-y-2 max-h-32 overflow-y-auto">
+                                {performanceData.map((seller, index) => (
+                                    <div key={index} className="flex items-center justify-between text-sm bg-emerald-700/30 rounded-lg p-2">
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                                                index === 0 ? 'bg-yellow-500 text-yellow-900' :
+                                                index === 1 ? 'bg-gray-400 text-gray-900' :
+                                                index === 2 ? 'bg-amber-600 text-amber-100' :
+                                                'bg-emerald-600 text-emerald-100'
+                                            }`}>
+                                                {index + 1}
+                                            </div>
+                                            <span className="text-white font-medium">{seller.name}</span>
+                                        </div>
+                                        <div className="text-emerald-300 font-semibold">
+                                            {formatCurrency(seller.value)}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center h-80 text-emerald-400">
+                            <div className="text-center">
+                                <div className="text-4xl mb-2">👥</div>
+                                <p>No hay datos de performance disponibles</p>
+                                <p className="text-xs mt-1">Las métricas se mostrarán cuando haya vendedores activos</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Panel de insights y alertas */}
+            {pipelineData && pipelineData.length > 0 && performanceData && performanceData.length > 0 && (
+                <div className="mt-6 bg-emerald-800/30 rounded-xl p-4 border border-emerald-600/20">
+                    <div className="flex items-start gap-3">
+                        <div className="text-yellow-400 text-lg">💡</div>
+                        <div>
+                            <h4 className="text-sm font-semibold text-emerald-300 mb-2">Insights Comerciales</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+                                <div>
+                                    <span className="text-emerald-400">Total Oportunidades:</span>
+                                    <span className="text-white ml-2 font-semibold">{pipelineData.length}</span>
+                                </div>
+                                <div>
+                                    <span className="text-emerald-400">Vendedores Activos:</span>
+                                    <span className="text-white ml-2 font-semibold">{performanceData.length}</span>
+                                </div>
+                                <div>
+                                    <span className="text-emerald-400">Promedio por Vendedor:</span>
+                                    <span className="text-white ml-2 font-semibold">
+                                        {formatCurrency(performanceData.reduce((acc, p) => acc + p.value, 0) / performanceData.length)}
+                                    </span>
+                                </div>
+                                <div>
+                                    <span className="text-emerald-400">Actualización:</span>
+                                    <span className="text-emerald-300 ml-2">{new Date().toLocaleTimeString()}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
