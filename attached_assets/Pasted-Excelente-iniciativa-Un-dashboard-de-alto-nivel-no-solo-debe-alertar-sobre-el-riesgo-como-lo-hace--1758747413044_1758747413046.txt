@@ -1,0 +1,65 @@
+Excelente iniciativa. Un dashboard de alto nivel no solo debe alertar sobre el riesgo (como lo hace el LTV), sino también revelar oportunidades y medir el rendimiento de cada área del negocio. Tienes toda la razón, nuestro dashboard actual está subutilizado.
+
+Vamos a enriquecerlo transformándolo en un verdadero centro de control con tres zonas especializadas.
+
+---
+### **Propuesta de Rediseño del Dashboard General**
+
+Proponemos una estructura modular que ofrezca una visión completa del negocio, dividida en: **Salud Financiera**, **Rendimiento del Portafolio** y **Rendimiento Comercial**.
+
+#### **1. Zona de Salud Financiera (Vista del CEO/Financiera)**
+*Esta zona ocupa la parte superior y ofrece los KPIs vitales del negocio de un solo vistazo.*
+
+1.  **Medidor de LTV (Existente):** Mantenemos el `RiskGauge` del LTV. Sigue siendo nuestro indicador de riesgo más crítico.
+2.  **KPIs Principales (Existentes):** Mantenemos las tarjetas de `Valor del Portafolio` y `Deuda Total`.
+3.  **NUEVO - Indicador de Flujo de Caja Operativo:**
+    * **Qué es:** Una tarjeta de métrica que muestra la rentabilidad en efectivo del negocio en el mes actual.
+    * **Fórmula:** `(Ingresos por Intereses de Clientes) - (Gastos por Intereses del Bróker) - (Costos Operativos Mensuales)`.
+    * **Por qué es importante:** Muestra si el núcleo del negocio está generando o consumiendo efectivo, una métrica vital para la sostenibilidad.
+
+---
+#### **2. Zona de Rendimiento del Portafolio (Vista del Tesorero/Inversor)**
+*Esta sección responde directamente a tu primera solicitud, enfocándose en el rendimiento del colateral que respalda toda la operación.*
+
+1.  **NUEVO - Gráfico de Rendimiento de Activos (Gráfico de Líneas):**
+    * **Descripción:** Un gráfico de líneas que muestra la evolución del valor de mercado de tus activos de inversión a lo largo del tiempo.
+    * **Eje X:** Tiempo (con filtros para ver los últimos 30, 90 o 365 días).
+    * **Eje Y:** Valor de Mercado ($).
+    * **Series de Datos:**
+        * Una línea de color para cada activo principal en la cartera (ej. "Bono del Tesoro 2027", "Acciones de Apple").
+        * Una línea más gruesa o punteada que represente el **valor total o promedio del portafolio**.
+    * **Requisito Técnico:** Esto requiere registrar el valor histórico de los activos en la base de datos a intervalos regulares (ej. semanalmente).
+
+2.  **NUEVO - Tabla de Composición del Portafolio (Gráfico de Pastel o Tabla):**
+    * **Descripción:** Un gráfico de pastel que muestra la distribución de tu cartera.
+    * **Segmentos:** Cada "quesito" representa un activo.
+    * **Valor:** El porcentaje que cada activo representa sobre el valor total del portafolio.
+    * **Por qué es importante:** Permite evaluar la diversificación y el riesgo de concentración de tu colateral.
+
+
+---
+#### **3. Zona de Rendimiento Comercial (Vista del Gerente de Ventas)**
+*Esta sección aborda tu segunda solicitud, proporcionando visibilidad sobre el motor de crecimiento del negocio: el equipo comercial.*
+
+1.  **NUEVO - Embudo de Ventas (Funnel Chart):**
+    * **Descripción:** Una visualización clásica del pipeline comercial.
+    * **Etapas del Embudo:**
+        1.  **Oportunidades Creadas:** El valor total ($) de todos los proyectos creados por el equipo comercial este mes/trimestre.
+        2.  **Pendientes de Aprobación:** El valor ($) de los proyectos que han sido enviados para tu aprobación final.
+        3.  **Proyectos Ganados (Activos):** El valor ($) de los proyectos que han sido aprobados y están en ejecución.
+    * **Por qué es importante:** Proporciona una visión clara de la salud del pipeline de ventas y las tasas de conversión.
+    * **Requisito Técnico:** Requiere añadir un campo de `status` a la tabla de `projects` (ej. 'Oportunidad', 'Pendiente de Aprobación', 'Activo', 'Completado').
+
+2.  **NUEVO - Proyectos Activos por Vendedor (Gráfico de Barras):**
+    * **Descripción:** Un gráfico de barras que muestra el rendimiento individual.
+    * **Eje X:** Nombres de los miembros del equipo comercial.
+    * **Eje Y:** Suma del monto financiado ($) de los proyectos activos de cada uno.
+    * **Por qué es importante:** Permite medir el rendimiento del equipo, identificar a los mejores vendedores y ver quién gestiona la mayor cartera de clientes activos.
+
+### **Pasos Siguientes para el Desarrollo**
+Para implementar estas mejoras, el desarrollador deberá:
+1.  **Modificar la Base de Datos:**
+    * Añadir un campo `status` a la tabla `projects`.
+    * Crear una nueva tabla `asset_value_history` para almacenar los valores históricos del portafolio.
+2.  **Crear Nuevos Endpoints en el Backend:** Desarrollar las rutas de la API necesarias para servir los datos a estos nuevos gráficos (ej. `/api/portfolio/performance`, `/api/sales/pipeline`).
+3.  **Construir los Componentes en React:** Usar una librería como `Recharts` o `Chart.js` para crear estos nuevos gráficos en el frontend.

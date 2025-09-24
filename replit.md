@@ -23,13 +23,62 @@ Transformar la complejidad del modelo de negocio en una ventaja competitiva sost
 
 ## Módulos del Sistema
 
-### **Módulo 1: Dashboard Principal / Centro de Control**
-**Objetivo**: Visión 360° de la salud y rendimiento del negocio en tiempo real
+### **Módulo 1: Dashboard Principal / Centro de Control - REDISEÑO AVANZADO**
+**Objetivo**: Verdadero centro de control estratégico con tres zonas especializadas para visión completa del negocio
 
-**Componentes Clave**:
-- **Zona de Salud Financiera**: KPIs vitales (Medidor LTV, Valor del Portafolio, Deuda Total, Flujo de Caja Operativo)
-- **Zona de Rendimiento del Portafolio**: Gráficos de rendimiento histórico y composición de colateral
-- **Zona de Rendimiento Comercial**: Embudo de ventas y rendimiento del equipo comercial
+#### **Zona 1: Salud Financiera (Vista CEO/Financiera)**
+*Parte superior del dashboard - KPIs vitales del negocio*
+
+**Componentes**:
+- **Medidor de LTV (Existente)**: RiskGauge del LTV - indicador de riesgo más crítico
+- **KPIs Principales (Existentes)**: Tarjetas de Valor del Portafolio y Deuda Total  
+- **🆕 NUEVO - Indicador de Flujo de Caja Operativo**:
+  * **Fórmula**: `(Ingresos por Intereses de Clientes) - (Gastos por Intereses del Bróker) - (Costos Operativos Mensuales)`
+  * **Propósito**: Muestra si el núcleo del negocio está generando o consumiendo efectivo
+
+#### **Zona 2: Rendimiento del Portafolio (Vista Tesorero/Inversor)**  
+*Enfoque en el rendimiento del colateral que respalda toda la operación*
+
+**Componentes**:
+- **🆕 NUEVO - Gráfico de Rendimiento de Activos (Líneas)**:
+  * **Visualización**: Evolución del valor de mercado de activos de inversión a lo largo del tiempo
+  * **Ejes**: X=Tiempo (30/90/365 días), Y=Valor de Mercado ($)
+  * **Series**: Línea por cada activo + línea total del portafolio
+  * **Requisito**: Registro histórico de valores en `asset_value_history`
+
+- **🆕 NUEVO - Composición del Portafolio (Gráfico Pastel)**:
+  * **Visualización**: Distribución porcentual de la cartera por activo
+  * **Propósito**: Evaluación de diversificación y riesgo de concentración
+
+#### **Zona 3: Rendimiento Comercial (Vista Gerente Ventas)**
+*Motor de crecimiento del negocio - desempeño del equipo comercial*
+
+**Componentes**:
+- **🆕 NUEVO - Embudo de Ventas (Funnel Chart)**:
+  * **Etapas**: 
+    1. Oportunidades Creadas ($)
+    2. Pendientes de Aprobación ($)  
+    3. Proyectos Ganados/Activos ($)
+  * **Propósito**: Visibilidad del pipeline comercial y tasas de conversión
+  * **Requisito**: Campo `status` en tabla `projects`
+
+- **🆕 NUEVO - Proyectos Activos por Vendedor (Barras)**:
+  * **Visualización**: Rendimiento individual por monto financiado ($)  
+  * **Propósito**: Métricas de equipo, identificación de mejores vendedores
+
+### **Requisitos Técnicos para Implementación**
+1. **Modificaciones Base de Datos**:
+   - Añadir campo `status` a tabla `projects` ('Oportunidad', 'Pendiente de Aprobación', 'Activo', 'Completado')
+   - Crear tabla `asset_value_history` para valores históricos del portafolio
+
+2. **Nuevos Endpoints Backend**:
+   - `/api/portfolio/performance` - Datos de rendimiento histórico
+   - `/api/sales/pipeline` - Datos del embudo comercial
+   - `/api/dashboard/cashflow` - Cálculo de flujo de caja operativo
+
+3. **Componentes Frontend**:
+   - Usar Recharts para gráficos avanzados (líneas, pastel, embudo, barras)
+   - Layout responsivo de tres zonas especializadas
 
 ### **Módulo 2: CRM Financiero (Clientes y Proyectos)**
 **Objetivo**: Gestión del ciclo completo de relación con cliente y operaciones de financiamiento
