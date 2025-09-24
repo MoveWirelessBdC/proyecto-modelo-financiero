@@ -35,6 +35,6 @@ app.use('/api/stages', stageRoutes);
 app.use('/api/tags', tagRoutes);
 app.use('/api/sales', salesRoutes);
 
-app.listen(PORT, () => {
+app.listen(PORT, 'localhost', () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
