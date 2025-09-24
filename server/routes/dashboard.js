@@ -44,4 +44,28 @@ router.get('/sales-funnel', async (req, res) => {
     }
 });
 
+/**
+ * GET /api/dashboard/seller-performance
+ * Devuelve la suma de montos de proyectos activos por vendedor.
+ */
+router.get('/seller-performance', async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                u.nombre_completo as name,
+                COALESCE(SUM(p.amount), 0) as value
+            FROM users u
+            JOIN projects p ON u.id = p.created_by_id
+            WHERE p.status = 'Activo'
+            GROUP BY u.nombre_completo
+            ORDER BY value DESC;
+        `;
+        const { rows } = await pool.query(query);
+        res.json(rows.map(row => ({ ...row, value: parseFloat(row.value) })));
+    } catch (err) {
+        console.error('Error fetching seller performance data:', err);
+        res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+});
+
 export default router;

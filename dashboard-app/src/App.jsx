@@ -1,7 +1,7 @@
 // dashboard-app/src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './context/AuthContext';
+import { useAuth } from './hooks/useAuth'; // Corregido: Importar desde el hook personalizado
 import Login from './components/Login.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import MainLayout from './components/layout/MainLayout.jsx';

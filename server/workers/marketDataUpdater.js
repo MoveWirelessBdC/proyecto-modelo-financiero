@@ -1,9 +1,6 @@
 // server/workers/marketDataUpdater.js
 import pool from '../db/index.js';
 import axios from 'axios';
-import dotenv from 'dotenv';
-
-dotenv.config({ path: '../.env' });
 
 const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY;
 const ALPHA_VANTAGE_URL = 'https://www.alphavantage.co/query';

@@ -6,8 +6,8 @@ const API_URL = 'http://localhost:3001/api';
 const Portfolio = () => {
     const [assets, setAssets] = useState([]);
     const [transactions, setTransactions] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [_isLoading, setIsLoading] = useState(true);
+    const [_error, setError] = useState('');
 
     useEffect(() => {
         fetchData();
@@ -25,6 +25,7 @@ const Portfolio = () => {
             setError('');
         } catch (err) {
             setError('Could not fetch portfolio data');
+            console.error('Error fetching portfolio data:', err);
         } finally {
             setIsLoading(false);
         }

@@ -1,78 +1,87 @@
-// server/controllers/authController.js
-import bcryptjs from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import pool from '../db/index.js';
+import db from '../models/index.js'; // Sequelize models
 
+// Función para generar un token JWT
+const generateToken = (id, role) => {
+    return jwt.sign({ id, role }, process.env.JWT_SECRET, {
+        expiresIn: '1h',
+    });
+};
+
+// @desc    Autenticar usuario y obtener token
+// @route   POST /api/auth/login
+// @access  Public
 export const login = async (req, res) => {
+    const { email, password } = req.body;
+
     try {
-        const { email, password } = req.body;
-        const userResult = await pool.query(
-            `SELECT u.id, u.nombre_completo, u.email, u.password_hash, r.nombre_rol 
-             FROM users u 
-             JOIN roles r ON u.rol_id = r.id 
-             WHERE u.email = $1`,
-            [email]
-        );
+        // Buscar usuario por email usando Sequelize
+        const user = await db.User.findOne({
+            where: { email },
+            include: [{
+                model: db.Role,
+                as: 'role',
+                attributes: ['nombre_rol']
+            }]
+        });
 
-        if (userResult.rows.length === 0) {
-            return res.status(404).send({ message: 'Usuario no encontrado.' });
-        }
-        const user = userResult.rows[0];
-
-        const passwordIsValid = bcryptjs.compareSync(password, user.password_hash);
-        if (!passwordIsValid) {
-            return res.status(401).send({ message: 'Contraseña inválida.' });
+        if (!user) {
+            return res.status(400).json({ message: 'Credenciales inválidas' });
         }
 
-        const token = jwt.sign(
-            { id: user.id, rol: user.nombre_rol },
-            process.env.JWT_SECRET,
-            { expiresIn: 86400 } // 24 horas
-        );
+        // Comparar contraseña
+        const isMatch = await bcrypt.compare(password, user.password_hash);
 
-        const userResponse = {
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Credenciales inválidas' });
+        }
+
+        // Generar token
+        const token = generateToken(user.id, user.role.nombre_rol);
+
+        res.json({
             id: user.id,
             nombre_completo: user.nombre_completo,
             email: user.email,
-            rol: user.nombre_rol,
-        };
-
-        res.status(200).send({
-            user: userResponse,
-            accessToken: token
+            rol: user.role.nombre_rol,
+            token,
         });
+
     } catch (error) {
-        console.error("Error en el login:", error);
-        res.status(500).send({ message: "Error interno del servidor en el login." });
+        console.error(error);
+        res.status(500).send('Error del servidor');
     }
 };
 
+// @desc    Obtener datos del usuario autenticado
+// @route   GET /api/auth/me
+// @access  Private
 export const getMe = async (req, res) => {
     try {
-        const userResult = await pool.query(
-            `SELECT u.id, u.nombre_completo, u.email, r.nombre_rol 
-             FROM users u 
-             JOIN roles r ON u.rol_id = r.id 
-             WHERE u.id = $1`,
-            [req.user.id]
-        );
+        // req.user se establece en authMiddleware
+        const user = await db.User.findByPk(req.user.id, {
+            attributes: ['id', 'nombre_completo', 'email'], // Excluir password_hash
+            include: [{
+                model: db.Role,
+                as: 'role',
+                attributes: ['nombre_rol']
+            }]
+        });
 
-        if (userResult.rows.length === 0) {
-            return res.status(404).send({ message: 'Usuario no encontrado.' });
+        if (!user) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
-        const user = userResult.rows[0];
-
-        res.status(200).send({
-            user: {
-                id: user.id,
-                nombre_completo: user.nombre_completo,
-                email: user.email,
-                rol: user.nombre_rol,
-            }
+        res.json({
+            id: user.id,
+            nombre_completo: user.nombre_completo,
+            email: user.email,
+            rol: user.role ? user.role.nombre_rol : null,
         });
+
     } catch (error) {
-        console.error("Error fetching user data:", error);
-        res.status(500).send({ message: "Error interno del servidor." });
+        console.error(error);
+        res.status(500).send('Error del servidor');
     }
 };

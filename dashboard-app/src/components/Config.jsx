@@ -39,7 +39,7 @@ const Config = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         axios.post(`${API_URL}/config`, config)
-            .then(response => {
+            .then(() => {
                 alert('Configuration saved!');
             })
             .catch(error => console.error('Error saving config:', error));

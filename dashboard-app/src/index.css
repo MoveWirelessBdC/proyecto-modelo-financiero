@@ -1,7 +1,4 @@
-/* dashboard-app/src/index.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 body {
   background-color: #fdfdfd; /* Un blanco ligeramente cálido, menos clínico que el blanco puro */

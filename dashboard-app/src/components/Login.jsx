@@ -1,30 +1,36 @@
 // dashboard-app/src/components/Login.jsx
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext'; // Importamos el hook
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth'; // Corregido: Importar desde el hook personalizado
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const navigate = useNavigate(); // <--- Esta línea faltaba
     const { login } = useAuth(); // Obtenemos la función login del "cerebro"
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setError('');
-        try {
-            await login(email, password);
-            // Ya no necesitamos hacer nada más aquí, el AuthContext se encarga
-        } catch (err) {
-            const errorMessage = err.response?.data?.message || 'Error al iniciar sesión.';
-            setError(errorMessage);
-        }
-    };
+    const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log('Login.jsx: handleSubmit called');
+    setError(''); // Clear previous errors
+
+    try {
+      console.log('Login.jsx: Calling login function from useAuth...');
+      await login(email, password);
+      console.log('Login.jsx: Login successful, navigating to dashboard...');
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Login.jsx: Login error caught:', err);
+      setError(err.response?.data?.message || 'Error al iniciar sesión');
+    }
+  };
 
     // El resto del componente (el formulario) no cambia
     return (
         <div style={{ padding: '50px', maxWidth: '400px', margin: 'auto' }}>
             <h2>Iniciar Sesión</h2>
-            <form onSubmit={handleLogin}>
+            <form onSubmit={handleSubmit}>
                 {/* ... (el código del formulario es el mismo de antes) ... */}
                 <div style={{ marginBottom: '15px' }}>
                     <label>Email</label>

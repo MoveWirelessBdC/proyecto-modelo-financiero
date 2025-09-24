@@ -1,5 +1,5 @@
 // dashboard-app/src/pages/ProjectDetailPage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../api/api';
 
@@ -10,7 +10,7 @@ const ProjectDetailPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    const fetchProjectDetails = async () => {
+    const fetchProjectDetails = useCallback(async () => {
         try {
             setLoading(true);
             const response = await api.get(`/projects/${id}`);
@@ -18,14 +18,15 @@ const ProjectDetailPage = () => {
             setSchedule(response.data.schedule);
         } catch (err) {
             setError('No se pudieron cargar los detalles del proyecto.');
+            console.error('Error fetching project details:', err);
         } finally {
             setLoading(false);
         }
-    };
+    }, [id]);
 
     useEffect(() => {
         fetchProjectDetails();
-    }, [id]);
+    }, [fetchProjectDetails]);
 
     const handlePaymentStatus = async (paymentId, newStatus) => {
         try {
@@ -34,6 +35,7 @@ const ProjectDetailPage = () => {
             fetchProjectDetails();
         } catch (err) {
             alert('Error al actualizar el estado del pago.');
+            console.error('Error al actualizar el estado del pago.', err);
         }
     };
 

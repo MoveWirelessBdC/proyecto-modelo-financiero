@@ -45,6 +45,7 @@ const OpportunityDetails = ({ opportunity, onUpdate, onSaveAndClose }) => {
             onUpdate();
         } catch (err) {
             setError('Error al asignar miembro.');
+            console.error('Error al asignar miembro.', err);
         }
     };
 
@@ -54,6 +55,7 @@ const OpportunityDetails = ({ opportunity, onUpdate, onSaveAndClose }) => {
             onUpdate();
         } catch (err) {
             setError('Error al des-asignar miembro.');
+            console.error('Error al des-asignar miembro.', err);
         }
     };
 
@@ -65,6 +67,7 @@ const OpportunityDetails = ({ opportunity, onUpdate, onSaveAndClose }) => {
             onUpdate(); // Use the onUpdate prop passed from the workspace
         } catch (err) {
             setError('Error al asignar etiqueta.');
+            console.error('Error al asignar etiqueta.', err);
         }
     };
 
@@ -74,6 +77,7 @@ const OpportunityDetails = ({ opportunity, onUpdate, onSaveAndClose }) => {
             onUpdate();
         } catch (err) {
             setError('Error al quitar etiqueta.');
+            console.error('Error al quitar etiqueta.', err);
         }
     };
 

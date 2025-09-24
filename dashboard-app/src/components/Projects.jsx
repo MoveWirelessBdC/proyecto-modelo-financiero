@@ -34,7 +34,7 @@ const Projects = () => {
             const response = await axios.get(`${API_URL}/clients`);
             setClients(response.data);
         } catch (err) {
-            console.error('Could not fetch clients for the form');
+            console.error('Could not fetch clients for the form', err);
         }
     };
 

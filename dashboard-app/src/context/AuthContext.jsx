@@ -1,52 +1,74 @@
 // dashboard-app/src/context/AuthContext.jsx
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { AuthContext } from './AuthContextDef.js';
 import api from '../api/api'; // Import the configured api instance
-
-const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true); // Add a loading state
 
     useEffect(() => {
-        const fetchUser = async () => {
-            const token = localStorage.getItem('accessToken');
+        const initializeAuth = () => {
+            const token = localStorage.getItem('token');
+            console.log('AuthContext: Initializing auth, token found:', token ? 'YES' : 'NO');
+            
             if (token) {
-                try {
-                    // Use the api instance which has the interceptor
-                    const response = await api.get('/auth/me'); 
-                    setUser(response.data.user);
-                } catch (error) {
-                    console.error("Failed to fetch user", error);
-                    localStorage.removeItem('accessToken'); // Token is invalid
-                    setUser(null);
-                }
+                // Si hay token, intentar validarlo
+                validateToken(token);
+            } else {
+                console.log('AuthContext: No token found, user stays null');
+                setLoading(false);
             }
-            setLoading(false);
         };
 
-        fetchUser();
+        initializeAuth();
     }, []);
 
+    const validateToken = async (token) => {
+        try {
+            console.log('AuthContext: Validating token with /auth/me');
+            const response = await api.get('/auth/me');
+            console.log('AuthContext: Token validation successful:', response.data);
+            setUser(response.data.user || response.data);
+        } catch (error) {
+            console.error('AuthContext: Token validation failed', error);
+            // Token inválido, limpiar todo
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setUser(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const login = async (email, password) => {
-        // Use the api instance
-        const response = await api.post('/auth/login', {
-            email,
-            password
-        });
-        const { accessToken, user } = response.data;
-        localStorage.setItem('accessToken', accessToken);
-        setUser(user);
+        console.log('AuthContext.jsx: login function called with email:', email);
+        try {
+            console.log('AuthContext.jsx: Sending POST request to /auth/login...');
+            const res = await api.post('/auth/login', { email, password });
+            console.log('AuthContext.jsx: Login API call successful. Response:', res.data);
+            
+            // Save token and user data
+            localStorage.setItem('token', res.data.token);
+            setUser(res.data.user || res.data); // Handle different response structures
+            
+            return res.data;
+        } catch (error) {
+            console.error('AuthContext.jsx: Login failed in AuthContext:', error);
+            throw error;
+        }
     };
 
     const logout = () => {
-        localStorage.removeItem('accessToken');
+        console.log('AuthContext: Logging out, removing token');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
         setUser(null);
     };
 
     // Don't render children until we've checked for a user
     if (loading) {
-        return <div>Loading...</div>; // Or a proper spinner component
+        return <div>Loading...</div>;
     }
 
     return (
@@ -54,9 +76,4 @@ export const AuthProvider = ({ children }) => {
             {children}
         </AuthContext.Provider>
     );
-};
-
-// Un "hook" personalizado para acceder fácilmente al contexto
-export const useAuth = () => {
-    return useContext(AuthContext);
 };

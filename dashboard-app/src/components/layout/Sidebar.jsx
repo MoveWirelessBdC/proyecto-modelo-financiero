@@ -1,7 +1,7 @@
 // dashboard-app/src/components/layout/Sidebar.jsx
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth'; // Corregido: Importar desde el hook personalizado
 
 // Define todos los enlaces de navegación y los roles que pueden verlos
 const navLinks = [

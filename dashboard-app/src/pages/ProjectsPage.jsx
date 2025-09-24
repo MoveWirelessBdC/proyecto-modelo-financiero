@@ -1,5 +1,5 @@
 // dashboard-app/src/pages/ProjectsPage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/api';
 
@@ -21,7 +21,7 @@ const ProjectsPage = () => {
         sales_commission: '0'
     });
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             setError('');
             const projectsResponse = await api.get('/projects');
@@ -37,11 +37,11 @@ const ProjectsPage = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [newProject.client_id]);
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
