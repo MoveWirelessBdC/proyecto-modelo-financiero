@@ -54,41 +54,88 @@ const FinancialHealth = () => {
     const operatingCashFlow = calculateOperatingCashFlow();
 
     return (
-        <div className="bg-gray-900 text-white p-4 md:p-6 rounded-lg">
-            <h2 className="text-2xl font-bold text-white mb-6">Zona de Salud Financiera</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {/* 1. Medidor de LTV (Existente) */}
-                <RiskGauge
-                    value={data?.ltv || 0}
-                    low={60}
-                    high={80}
-                    title="LTV Actual"
-                />
+        <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white p-6 rounded-2xl shadow-2xl border border-gray-700">
+            {/* Header con indicador de estado general */}
+            <div className="flex items-center justify-between mb-8">
+                <div>
+                    <h2 className="text-3xl font-bold text-white mb-2">💼 Salud Financiera</h2>
+                    <p className="text-gray-400 text-sm">KPIs vitales del negocio en tiempo real</p>
+                </div>
+                <div className={`px-4 py-2 rounded-full text-sm font-semibold ${
+                    operatingCashFlow >= 0 
+                        ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                        : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                }`}>
+                    {operatingCashFlow >= 0 ? '🟢 Rentable' : '🟡 Atención'}
+                </div>
+            </div>
+
+            {/* Grid optimizado con mejor espaciado */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
+                {/* 1. Medidor de LTV (Existente) - Posición destacada */}
+                <div className="md:col-span-1">
+                    <RiskGauge
+                        value={data?.ltv || 0}
+                        low={60}
+                        high={80}
+                        title="LTV Actual"
+                    />
+                </div>
+                
                 {/* 2. KPIs Principales (Existentes) */}
                 <MetricCard
                     title="Valor del Portafolio"
                     value={formatCurrency(data?.totalMarketValue)}
-                    subtitle="Valor de Mercado Actual"
+                    subtitle="Colateral disponible"
                     icon="💹"
+                    color="blue"
                 />
+                
                 <MetricCard
                     title="Deuda Total"
                     value={formatCurrency(data?.totalDebt)}
-                    subtitle="Suma de saldos pendientes"
-                    icon="🔥"
+                    subtitle="Financiamientos activos"
+                    icon="💳"
+                    color="purple"
                 />
-                {/* 3. NUEVO - Indicador de Flujo de Caja Operativo */}
+                
+                {/* 3. Flujo de Caja Operativo - Destacado */}
                 <MetricCard
                     title="Flujo de Caja Operativo"
                     value={formatCurrency(operatingCashFlow)}
-                    subtitle="Rentabilidad en efectivo (Mes)"
-                    icon={operatingCashFlow >= 0 ? '✅' : '⚠️'}
+                    subtitle={`Mes actual (${new Date().toLocaleDateString('es', {month: 'short'})})`}
+                    icon={operatingCashFlow >= 0 ? '💚' : '⚠️'}
                     color={operatingCashFlow >= 0 ? 'green' : 'yellow'}
+                    trend={operatingCashFlow >= 0 ? 
+                        ((operatingCashFlow / (BROKER_INTEREST_EXPENSE_MONTHLY + OPERATING_EXPENSE_MONTHLY)) * 100) : 
+                        undefined
+                    }
                 />
             </div>
-             <div className="text-xs text-gray-400 mt-4">
-                * Flujo de Caja Operativo = (Ingresos por Intereses) - (Gastos Intereses Bróker) - (Costos Operativos).
-                Los gastos y costos son valores de ejemplo.
+
+            {/* Panel informativo mejorado */}
+            <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-600/30">
+                <div className="flex items-start gap-3">
+                    <div className="text-blue-400 text-lg">ℹ️</div>
+                    <div>
+                        <h4 className="text-sm font-semibold text-gray-300 mb-1">Cálculo del Flujo de Caja Operativo</h4>
+                        <p className="text-xs text-gray-400 mb-2">
+                            <span className="text-green-400">${parseFloat(data?.interestIncomeThisMonth || 0).toLocaleString()}</span> (Ingresos por Intereses) - 
+                            <span className="text-red-400"> ${BROKER_INTEREST_EXPENSE_MONTHLY.toLocaleString()}</span> (Gastos Bróker) - 
+                            <span className="text-red-400"> ${OPERATING_EXPENSE_MONTHLY.toLocaleString()}</span> (Costos Operativos)
+                        </p>
+                        <div className="flex items-center gap-4 text-xs">
+                            <span className="text-gray-500">Última actualización: {new Date().toLocaleTimeString()}</span>
+                            <span className={`px-2 py-1 rounded text-xs ${
+                                (data?.ltv || 0) < 60 ? 'bg-green-500/20 text-green-400' :
+                                (data?.ltv || 0) < 80 ? 'bg-yellow-500/20 text-yellow-400' :
+                                'bg-red-500/20 text-red-400'
+                            }`}>
+                                Riesgo LTV: {(data?.ltv || 0) < 60 ? 'BAJO' : (data?.ltv || 0) < 80 ? 'MEDIO' : 'ALTO'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
