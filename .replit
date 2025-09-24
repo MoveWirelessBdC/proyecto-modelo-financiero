@@ -36,3 +36,8 @@ externalPort = 80
 [[ports]]
 localPort = 37649
 externalPort = 3000
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["bash", "-c", "cd server && npm start & cd dashboard-app && npx serve -s dist -l 5000 --no-clipboard --no-port-switching"]
+build = ["bash", "-c", "cd dashboard-app && npm run build"]
