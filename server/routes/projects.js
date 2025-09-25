@@ -125,6 +125,45 @@ router.get('/:id', [authMiddleware, checkPermission('projects:view')], async (re
     }
 });
 
+// PUT /api/projects/:id - Actualiza un proyecto
+router.put('/:id', [authMiddleware, checkPermission('projects:edit')], async (req, res) => {
+    try {
+        const projectId = parseInt(req.params.id, 10);
+        if (isNaN(projectId)) {
+            return res.status(400).json({ message: 'ID de proyecto inválido.' });
+        }
+
+        const { client_id, description, status } = req.body;
+        
+        const project = await db.Project.findByPk(projectId);
+        if (!project) {
+            return res.status(404).json({ message: 'Proyecto no encontrado.' });
+        }
+
+        // Actualizar los campos permitidos
+        if (client_id !== undefined) project.client_id = client_id;
+        if (description !== undefined) project.description = description;
+        if (status !== undefined) project.status = status;
+
+        await project.save();
+
+        // Devolver el proyecto actualizado con información del cliente
+        const updatedProject = await db.Project.findByPk(projectId, {
+            include: [{ model: db.Client, attributes: ['name'] }]
+        });
+
+        const flattenedProject = {
+            ...updatedProject.toJSON(),
+            client_name: updatedProject.Client ? updatedProject.Client.name : null
+        };
+
+        res.json(flattenedProject);
+    } catch (err) {
+        console.error(`Error updating project ${req.params.id}:`, err);
+        res.status(500).json({ message: 'Error interno del servidor al actualizar el proyecto.' });
+    }
+});
+
 // DELETE /api/projects/:id - Borra un proyecto
 router.delete('/:id', [authMiddleware, checkPermission('projects:delete')], async (req, res) => {
     try {
