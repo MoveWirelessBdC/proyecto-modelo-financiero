@@ -37,6 +37,10 @@ externalPort = 3001
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 33153
+externalPort = 3000
+
 [deployment]
 deploymentTarget = "autoscale"
 run = ["bash", "-c", "cd server && npm start & cd dashboard-app && npx serve -s dist -l 5000 --no-clipboard --no-port-switching"]
