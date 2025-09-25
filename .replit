@@ -15,19 +15,19 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Full Stack App"
+args = "FinMod Pro"
 
 [[workflows.workflow]]
-name = "Full Stack App"
+name = "FinMod Pro"
 author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "bash -c \"(cd server && npm start) & (cd dashboard-app && npm run dev) & wait\""
 waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [[ports]]
 localPort = 3001
