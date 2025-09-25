@@ -1,5 +1,6 @@
 // dashboard-app/src/pages/ClientsPage.jsx
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api/api';
 
 const ClientsPage = () => {
@@ -36,9 +37,20 @@ const ClientsPage = () => {
         }
     };
 
+    // Función para obtener estadísticas del backend
+    const fetchClientStats = async () => {
+        try {
+            const response = await api.get('/clients/stats');
+            setClientStats(response.data);
+        } catch (err) {
+            console.error('Error fetching client stats:', err);
+        }
+    };
+
     // useEffect para llamar a fetchClients cuando el componente se carga
     useEffect(() => {
         fetchClients();
+        fetchClientStats();
     }, []);
 
     // Función para manejar el envío del formulario de nuevo cliente
@@ -230,9 +242,12 @@ const ClientsPage = () => {
                                             {client.owner_name || 'N/A'}
                                         </td>
                                         <td className="py-3 px-4">
-                                            <button className="text-gray-600 hover:text-gray-800 text-sm underline transition-colors">
+                                            <Link
+                                                to={`/clients/${client.id}`}
+                                                className="text-gray-600 hover:text-gray-800 text-sm underline transition-colors"
+                                            >
                                                 Ver detalles
-                                            </button>
+                                            </Link>
                                         </td>
                                     </tr>
                                 ))}

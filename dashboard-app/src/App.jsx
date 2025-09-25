@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import MainLayout from './components/layout/MainLayout.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import ClientsPage from './pages/ClientsPage.jsx';
+import ClientDetailPage from './pages/ClientDetailPage.jsx';
 import ProjectsPage from './pages/ProjectsPage.jsx';
 import ProjectDetailPage from './pages/ProjectDetailPage.jsx';
 import PortfolioPage from './pages/PortfolioPage.jsx';
@@ -28,6 +29,7 @@ function App() {
                                 <Routes>
                                     <Route path="/dashboard" element={<DashboardPage />} />
                                     <Route path="/clients" element={<ClientsPage />} />
+                                    <Route path="/clients/:id" element={<ClientDetailPage />} />
                                     <Route path="/crm" element={<CrmPipelinePage />} />
                                     <Route path="/projects" element={<ProjectsPage />} />
                                     <Route path="/projects/:id" element={<ProjectDetailPage />} />
