@@ -4,7 +4,7 @@ import axios from 'axios';
 const api = axios.create({
     baseURL: window.location.hostname === 'localhost' 
         ? 'http://localhost:3001/api' 
-        : `${window.location.protocol}//${window.location.hostname.replace('-5000.', '-3001.')}/api`,
+        : `${window.location.protocol}//${window.location.hostname.replace('.replit.dev', '-3001.replit.dev')}/api`,
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
