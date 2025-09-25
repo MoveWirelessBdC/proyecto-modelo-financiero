@@ -338,17 +338,165 @@ const ProjectDetailPage = () => {
                     </div>
                 </div>
 
-                {/* Panel de Conectividad CRM - Próximamente */}
+                {/* Panel de Conectividad CRM */}
                 <div className="glass-card p-6 rounded-2xl shadow-lg border-l-4 border-purple-500">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Conectividad CRM</h2>
-                    <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-bold text-gray-800">Conectividad CRM</h2>
+                        <div className="text-sm text-gray-600">
+                            Cliente: {project.client_name}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Oportunidades Relacionadas */}
+                        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-xl font-semibold text-gray-800">Oportunidades del Cliente</h3>
+                                <button 
+                                    onClick={() => {/* TODO: Modal para crear oportunidad */}}
+                                    className="text-purple-600 hover:text-purple-800 text-sm font-medium"
+                                >
+                                    + Nueva Oportunidad
+                                </button>
+                            </div>
+                            
+                            {opportunities.filter(opp => opp.client_id === project.client_id).length > 0 ? (
+                                <div className="space-y-3 max-h-64 overflow-y-auto">
+                                    {opportunities
+                                        .filter(opp => opp.client_id === project.client_id)
+                                        .map(opportunity => (
+                                            <div key={opportunity.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex-1">
+                                                        <h4 className="font-medium text-gray-800 mb-1">{opportunity.name}</h4>
+                                                        <div className="flex items-center gap-3 text-sm text-gray-600 mb-2">
+                                                            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-lg">
+                                                                {opportunity.stage_name || 'Sin etapa'}
+                                                            </span>
+                                                            {opportunity.potential_amount && (
+                                                                <span className="text-green-600 font-medium">
+                                                                    {formatCurrency(parseFloat(opportunity.potential_amount))}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div className="text-xs text-gray-500">
+                                                            Responsable: {opportunity.owner_name || 'No asignado'}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-2 ml-4">
+                                                        <button
+                                                            onClick={() => window.open(`/opportunities/${opportunity.id}`, '_blank')}
+                                                            className="text-blue-600 hover:text-blue-800 text-sm"
+                                                            title="Ver oportunidad"
+                                                        >
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* Progress checklist si existe */}
+                                                {opportunity.checklist_progress && opportunity.checklist_progress.total > 0 && (
+                                                    <div className="mt-3 pt-3 border-t border-gray-100">
+                                                        <div className="flex items-center justify-between text-xs text-gray-600">
+                                                            <span>Checklist</span>
+                                                            <span>{opportunity.checklist_progress.completed}/{opportunity.checklist_progress.total}</span>
+                                                        </div>
+                                                        <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                                                            <div 
+                                                                className="bg-purple-600 h-2 rounded-full transition-all duration-300" 
+                                                                style={{ 
+                                                                    width: `${(opportunity.checklist_progress.completed / opportunity.checklist_progress.total) * 100}%` 
+                                                                }}
+                                                            ></div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))
+                                    }
+                                </div>
+                            ) : (
+                                <div className="text-center py-12 text-gray-500">
+                                    <div className="text-4xl mb-3">🔍</div>
+                                    <p className="text-sm">No hay oportunidades activas para este cliente</p>
+                                    <p className="text-xs mt-1">Puedes crear una nueva oportunidad relacionada al proyecto</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Panel de Acciones CRM */}
+                        <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                            <h3 className="text-xl font-semibold text-gray-800 mb-4">Acciones de Integración</h3>
+                            
+                            <div className="space-y-4">
+                                {/* Crear Oportunidad desde Proyecto */}
+                                <div className="border border-gray-200 rounded-lg p-4">
+                                    <h4 className="font-medium text-gray-800 mb-2">Crear Oportunidad Relacionada</h4>
+                                    <p className="text-sm text-gray-600 mb-3">
+                                        Genera una nueva oportunidad en el CRM basada en este proyecto para dar seguimiento comercial.
+                                    </p>
+                                    <button className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors text-sm">
+                                        Crear Oportunidad CRM
+                                    </button>
+                                </div>
+
+                                {/* Sincronizar Status */}
+                                <div className="border border-gray-200 rounded-lg p-4">
+                                    <h4 className="font-medium text-gray-800 mb-2">Sincronización de Estado</h4>
+                                    <p className="text-sm text-gray-600 mb-3">
+                                        Mantén el estado del proyecto sincronizado con las oportunidades relacionadas en el CRM.
+                                    </p>
+                                    <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                                        Sincronizar Estado
+                                    </button>
+                                </div>
+
+                                {/* Generar Reportes */}
+                                <div className="border border-gray-200 rounded-lg p-4">
+                                    <h4 className="font-medium text-gray-800 mb-2">Reportes Integrados</h4>
+                                    <p className="text-sm text-gray-600 mb-3">
+                                        Genera reportes que combinen datos del proyecto con información del CRM.
+                                    </p>
+                                    <button className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-sm">
+                                        Generar Reporte
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Stats de conectividad */}
+                            <div className="mt-6 pt-4 border-t border-gray-200">
+                                <div className="grid grid-cols-2 gap-4 text-center">
+                                    <div>
+                                        <div className="text-2xl font-bold text-purple-600">
+                                            {opportunities.filter(opp => opp.client_id === project.client_id).length}
+                                        </div>
+                                        <div className="text-xs text-gray-600">Oportunidades</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-2xl font-bold text-blue-600">
+                                            {opportunities
+                                                .filter(opp => opp.client_id === project.client_id)
+                                                .reduce((total, opp) => total + (opp.checklist_progress?.total || 0), 0)
+                                            }
+                                        </div>
+                                        <div className="text-xs text-gray-600">Tareas CRM</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Información adicional */}
+                    <div className="mt-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-4 border border-purple-200">
                         <div className="flex items-center gap-3">
-                            <div className="text-purple-600 text-lg">🔗</div>
+                            <div className="text-purple-600 text-lg">💡</div>
                             <div>
-                                <h4 className="text-sm font-semibold text-gray-800 mb-1">Próximamente - Tareas y Oportunidades</h4>
+                                <h4 className="text-sm font-semibold text-gray-800 mb-1">Conectividad Inteligente</h4>
                                 <p className="text-xs text-gray-600">
-                                    Esta sección permitirá asociar el proyecto con oportunidades del CRM, 
-                                    asignar tareas específicas, y gestionar el flujo completo del proceso comercial.
+                                    Esta funcionalidad conecta automáticamente tu proyecto financiero con las oportunidades comerciales del CRM, 
+                                    proporcionando una vista completa del ciclo de vida del cliente desde la prospección hasta el financiamiento.
                                 </p>
                             </div>
                         </div>
