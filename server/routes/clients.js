@@ -126,7 +126,7 @@ router.get('/:id/details', [authMiddleware, checkPermission('clients:view')], as
             FROM opportunities o
             LEFT JOIN pipeline_stages s ON o.stage_id = s.id
             LEFT JOIN users u ON o.owner_id = u.id
-            WHERE o.client_id = $1
+            WHERE o.client_id = ?
             ORDER BY o.created_at DESC
         `;
         
