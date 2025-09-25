@@ -120,27 +120,27 @@ const PortfolioPerformance = () => {
         ((performanceData[0].data[performanceData[0].data.length - 1]?.value - performanceData[0].data[0]?.value) / performanceData[0].data[0]?.value * 100) : 0;
 
     return (
-        <div className="bg-gradient-to-br from-blue-950 via-slate-900 to-blue-900 text-white p-6 rounded-2xl shadow-2xl border border-blue-800/30">
+        <div className="glass-card p-6 rounded-2xl shadow-lg border-l-4 border-purple-500">
             {/* Header con métricas de resumen */}
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
                 <div>
-                    <h2 className="text-3xl font-bold text-white mb-2">📈 Rendimiento del Portafolio</h2>
-                    <p className="text-blue-200 text-sm">Análisis del colateral que respalda la operación</p>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">📈 Rendimiento del Portafolio</h2>
+                    <p className="text-gray-600 text-sm">Análisis del colateral que respalda la operación</p>
                 </div>
                 <div className="flex gap-4 mt-4 md:mt-0">
-                    <div className="bg-blue-900/50 rounded-xl px-4 py-3 border border-blue-700/30">
-                        <div className="text-xs text-blue-300 mb-1">Valor Total</div>
-                        <div className="text-lg font-bold text-white">
+                    <div className="bg-purple-50 rounded-xl px-4 py-3 border border-purple-200">
+                        <div className="text-xs text-purple-600 mb-1 font-medium">Valor Total</div>
+                        <div className="text-lg font-bold text-gray-800">
                             {new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'USD' }).format(totalPortfolioValue)}
                         </div>
                     </div>
                     <div className={`rounded-xl px-4 py-3 border ${
                         performanceChange >= 0 
-                            ? 'bg-green-900/50 border-green-700/30' 
-                            : 'bg-red-900/50 border-red-700/30'
+                            ? 'bg-green-50 border-green-200' 
+                            : 'bg-red-50 border-red-200'
                     }`}>
-                        <div className="text-xs text-gray-300 mb-1">Rendimiento ({timeRange}D)</div>
-                        <div className={`text-lg font-bold ${performanceChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        <div className="text-xs text-gray-600 mb-1 font-medium">Rendimiento ({timeRange}D)</div>
+                        <div className={`text-lg font-bold ${performanceChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {performanceChange >= 0 ? '+' : ''}{performanceChange.toFixed(2)}%
                         </div>
                     </div>
@@ -149,11 +149,11 @@ const PortfolioPerformance = () => {
 
             <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
                 {/* Gráfico de Rendimiento de Activos - Más espacio */}
-                <div className="xl:col-span-3 bg-slate-800/50 p-6 rounded-xl border border-slate-600/30">
+                <div className="xl:col-span-3 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <h3 className="text-xl font-semibold text-white mb-1">📊 Evolución Histórica</h3>
-                            <p className="text-sm text-slate-400">Valor de mercado por activo a lo largo del tiempo</p>
+                            <h3 className="text-xl font-semibold text-gray-800 mb-1">📊 Evolución Histórica</h3>
+                            <p className="text-sm text-gray-600">Valor de mercado por activo a lo largo del tiempo</p>
                         </div>
                         <div className="flex space-x-2">
                             {[30, 90, 365].map(days => (
@@ -172,7 +172,7 @@ const PortfolioPerformance = () => {
                     </div>
                     {performanceData && performanceData.length > 0 ? 
                         renderLineChart() : 
-                        <div className="flex items-center justify-center h-64 text-slate-400">
+                        <div className="flex items-center justify-center h-64 text-gray-500">
                             <div className="text-center">
                                 <div className="text-4xl mb-2">📈</div>
                                 <p>No hay datos de rendimiento disponibles</p>
@@ -183,10 +183,10 @@ const PortfolioPerformance = () => {
                 </div>
 
                 {/* Composición del Portafolio */}
-                <div className="xl:col-span-2 bg-slate-800/50 p-6 rounded-xl border border-slate-600/30">
+                <div className="xl:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                     <div className="mb-6">
-                        <h3 className="text-xl font-semibold text-white mb-1">🥧 Composición</h3>
-                        <p className="text-sm text-slate-400">Distribución por tipo de activo</p>
+                        <h3 className="text-xl font-semibold text-gray-800 mb-1">🥧 Composición</h3>
+                        <p className="text-sm text-gray-600">Distribución por tipo de activo</p>
                     </div>
                     {compositionData && compositionData.length > 0 ? 
                         <div>

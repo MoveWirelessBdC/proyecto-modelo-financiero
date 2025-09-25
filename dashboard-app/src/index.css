@@ -6,3 +6,32 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Glass card effect para componentes principales */
+.glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Animaciones suaves para interacciones */
+.smooth-transition {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Gradientes consistentes para métricas */
+.gradient-blue {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.gradient-green {
+  background: linear-gradient(135deg, #10b981, #047857);
+}
+
+.gradient-purple {
+  background: linear-gradient(135deg, #8b5cf6, #5b21b6);
+}
+
+.gradient-orange {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}

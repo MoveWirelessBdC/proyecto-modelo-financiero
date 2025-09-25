@@ -71,32 +71,32 @@ const SalesPerformance = () => {
         performanceData.reduce((prev, current) => (prev.value > current.value) ? prev : current) : null;
 
     return (
-        <div className="bg-gradient-to-br from-green-950 via-emerald-900 to-green-900 text-white p-6 rounded-2xl shadow-2xl border border-green-800/30">
+        <div className="glass-card p-6 rounded-2xl shadow-lg border-l-4 border-green-500">
             {/* Header con métricas de pipeline */}
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
                 <div>
-                    <h2 className="text-3xl font-bold text-white mb-2">🎯 Rendimiento Comercial</h2>
-                    <p className="text-green-200 text-sm">Motor de crecimiento del negocio - Desempeño del equipo</p>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">🎯 Rendimiento Comercial</h2>
+                    <p className="text-gray-600 text-sm">Motor de crecimiento del negocio - Desempeño del equipo</p>
                 </div>
                 <div className="flex gap-4 mt-4 md:mt-0">
-                    <div className="bg-green-900/50 rounded-xl px-4 py-3 border border-green-700/30">
-                        <div className="text-xs text-green-300 mb-1">Pipeline Total</div>
-                        <div className="text-lg font-bold text-white">
+                    <div className="bg-green-50 rounded-xl px-4 py-3 border border-green-200">
+                        <div className="text-xs text-green-600 mb-1 font-medium">Pipeline Total</div>
+                        <div className="text-lg font-bold text-gray-800">
                             {formatCurrency(totalPipelineValue)}
                         </div>
                     </div>
                     {conversionRate > 0 && (
-                        <div className="bg-emerald-900/50 rounded-xl px-4 py-3 border border-emerald-700/30">
-                            <div className="text-xs text-emerald-300 mb-1">Tasa Conversión</div>
-                            <div className="text-lg font-bold text-emerald-400">
+                        <div className="bg-blue-50 rounded-xl px-4 py-3 border border-blue-200">
+                            <div className="text-xs text-blue-600 mb-1 font-medium">Tasa Conversión</div>
+                            <div className="text-lg font-bold text-blue-600">
                                 {conversionRate.toFixed(1)}%
                             </div>
                         </div>
                     )}
                     {topPerformer && (
-                        <div className="bg-yellow-900/50 rounded-xl px-4 py-3 border border-yellow-700/30">
-                            <div className="text-xs text-yellow-300 mb-1">Top Vendedor</div>
-                            <div className="text-lg font-bold text-yellow-400">
+                        <div className="bg-orange-50 rounded-xl px-4 py-3 border border-orange-200">
+                            <div className="text-xs text-orange-600 mb-1 font-medium">Top Vendedor</div>
+                            <div className="text-lg font-bold text-orange-600">
                                 {topPerformer.name.split(' ')[0]}
                             </div>
                         </div>
@@ -106,10 +106,10 @@ const SalesPerformance = () => {
 
             <div className="grid grid-cols-1 xl:grid-cols-7 gap-6">
                 {/* Embudo de Ventas - Más espacio */}
-                <div className="xl:col-span-4 bg-emerald-800/50 p-6 rounded-xl border border-emerald-600/30">
+                <div className="xl:col-span-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                     <div className="mb-6">
-                        <h3 className="text-xl font-semibold text-white mb-1">📈 Pipeline de Ventas</h3>
-                        <p className="text-sm text-emerald-400">Flujo de oportunidades por etapa del proceso</p>
+                        <h3 className="text-xl font-semibold text-gray-800 mb-1">📈 Pipeline de Ventas</h3>
+                        <p className="text-sm text-gray-600">Flujo de oportunidades por etapa del proceso</p>
                     </div>
                     {pipelineData && pipelineData.length > 0 ? (
                         <div>
@@ -158,10 +158,10 @@ const SalesPerformance = () => {
                 </div>
 
                 {/* Performance por Vendedor */}
-                <div className="xl:col-span-3 bg-emerald-800/50 p-6 rounded-xl border border-emerald-600/30">
+                <div className="xl:col-span-3 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                     <div className="mb-6">
-                        <h3 className="text-xl font-semibold text-white mb-1">👥 Performance Individual</h3>
-                        <p className="text-sm text-emerald-400">Cartera activa por miembro del equipo</p>
+                        <h3 className="text-xl font-semibold text-gray-800 mb-1">👥 Performance Individual</h3>
+                        <p className="text-sm text-gray-600">Cartera activa por miembro del equipo</p>
                     </div>
                     {performanceData && performanceData.length > 0 ? (
                         <div>
