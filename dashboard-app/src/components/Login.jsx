@@ -38,7 +38,7 @@ const Login = () => {
                 </div>
                 <div style={{ marginBottom: '15px' }}>
                     <label>Password</label>
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ width: '100%', padding: '8px' }}/>
+                    <input type="text" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ width: '100%', padding: '8px' }}/>
                 </div>
                 {error && <p style={{ color: 'red' }}>{error}</p>}
                 <button type="submit" style={{ padding: '10px 15px' }}>Entrar</button>
