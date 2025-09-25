@@ -27,6 +27,16 @@ export default (sequelize) => {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
     },
+    asset_type: {
+        type: DataTypes.ENUM('Cotizado', 'No Cotizado'),
+        allowNull: false,
+        defaultValue: 'Cotizado',
+        comment: 'Tipo de activo: Cotizado (precio de mercado automático) o No Cotizado (valoración manual)'
+    },
+    manual_valuation_date: {
+        type: DataTypes.DATE,
+        comment: 'Fecha de la última valoración manual (para activos no cotizados)'
+    },
   }, {
     tableName: 'portfolio_assets',
     timestamps: false,

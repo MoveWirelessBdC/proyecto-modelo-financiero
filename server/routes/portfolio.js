@@ -22,18 +22,33 @@ router.get('/assets', [authMiddleware, checkPermission('portfolio:view')], async
 // ADD a new asset
 router.post('/assets', [authMiddleware, checkPermission('portfolio:edit')], async (req, res) => {
     try {
-        const { name, ticker_symbol, purchase_value, purchase_date } = req.body;
+        const { name, ticker_symbol, purchase_value, purchase_date, asset_type, current_market_value } = req.body;
+        
+        // Determinar el valor de mercado inicial
+        let initialMarketValue = purchase_value; // Por defecto, igual al valor de compra
+        
+        if (asset_type === 'No Cotizado' && current_market_value) {
+            // Para activos no cotizados, usar el valor proporcionado
+            initialMarketValue = current_market_value;
+        }
+        
         const newAsset = await PortfolioAsset.create({
             name,
             ticker_symbol,
             purchase_value,
             purchase_date,
-            current_market_value: purchase_value, // Initially, market value is the purchase value
+            asset_type: asset_type || 'Cotizado',
+            current_market_value: initialMarketValue,
+            manual_valuation_date: asset_type === 'No Cotizado' ? new Date() : null,
         });
+        
         res.status(201).json(newAsset);
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Server Error');
+        console.error('Error creating asset:', err);
+        res.status(500).json({ 
+            message: 'Error al crear el activo',
+            error: err.message 
+        });
     }
 });
 

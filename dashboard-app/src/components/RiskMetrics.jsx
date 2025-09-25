@@ -1,5 +1,6 @@
 // dashboard-app/src/components/RiskMetrics.jsx
 import React from 'react';
+import Tooltip from './Tooltip';
 
 const RiskMetrics = ({ data, loading, error }) => {
   if (loading) {
@@ -93,6 +94,7 @@ const RiskMetrics = ({ data, loading, error }) => {
       title: 'Rendimiento YTD',
       value: `${data.ytdReturn}%`,
       description: 'Retorno desde inicio del año',
+      tooltip: 'Muestra el rendimiento de tu portafolio desde el 1 de enero hasta hoy. Un valor positivo indica ganancias, negativo indica pérdidas.',
       type: 'ytd'
     },
     {
@@ -100,6 +102,7 @@ const RiskMetrics = ({ data, loading, error }) => {
       title: 'Volatilidad Anual',
       value: `${data.volatility}%`,
       description: 'Desviación estándar anualizada',
+      tooltip: 'Mide qué tan impredecibles son los movimientos de precio de tu portafolio. Menor volatilidad = movimientos más estables. Mayor volatilidad = movimientos más bruscos.',
       type: 'volatility'
     },
     {
@@ -107,13 +110,15 @@ const RiskMetrics = ({ data, loading, error }) => {
       title: 'Beta vs. Mercado',
       value: data.beta,
       description: 'Correlación con benchmark',
+      tooltip: 'Mide si tu portafolio se mueve más o menos que el mercado. Beta = 1: se mueve igual al mercado. Beta > 1: más volátil. Beta < 1: menos volátil.',
       type: 'beta'
     },
     {
       key: 'sharpe',
       title: 'Ratio de Sharpe',
-      value: 'N/A',
+      value: 'Próximamente',
       description: 'Rendimiento ajustado por riesgo',
+      tooltip: 'Métrica avanzada que evalúa si el retorno de tu portafolio justifica el riesgo tomado. Se implementará en una futura versión.',
       type: 'default'
     }
   ];
@@ -137,7 +142,11 @@ const RiskMetrics = ({ data, loading, error }) => {
                   {getIcon(metric.type)}
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-800">{metric.title}</h4>
+                  <Tooltip content={metric.tooltip} position="top">
+                    <h4 className="font-medium text-gray-800 border-b border-dotted border-gray-400 cursor-help">
+                      {metric.title}
+                    </h4>
+                  </Tooltip>
                   <p className="text-xs text-gray-500">{metric.description}</p>
                 </div>
               </div>

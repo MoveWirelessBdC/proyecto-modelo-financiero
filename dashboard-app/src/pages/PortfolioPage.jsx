@@ -25,7 +25,9 @@ const PortfolioPage = () => {
         name: '', 
         ticker_symbol: '', 
         purchase_value: '', 
-        purchase_date: '' 
+        purchase_date: '',
+        asset_type: 'Cotizado',
+        current_market_value: '' 
     });
 
     useEffect(() => {
@@ -79,7 +81,7 @@ const PortfolioPage = () => {
         try {
             await api.post('/portfolio/assets', newAsset);
             await fetchAssets();
-            setNewAsset({ name: '', ticker_symbol: '', purchase_value: '', purchase_date: '' });
+            setNewAsset({ name: '', ticker_symbol: '', purchase_value: '', purchase_date: '', asset_type: 'Cotizado', current_market_value: '' });
             
             // Refrescar datos de análisis después de añadir activo
             setTimeout(() => {
@@ -264,7 +266,7 @@ const PortfolioPage = () => {
                                                     required
                                                 />
                                             </div>
-                                            <div className="mb-6">
+                                            <div className="mb-4">
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                                     Fecha de Compra
                                                 </label>
@@ -277,6 +279,49 @@ const PortfolioPage = () => {
                                                     required
                                                 />
                                             </div>
+                                            
+                                            {/* Tipo de Activo */}
+                                            <div className="mb-4">
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                    Tipo de Activo
+                                                </label>
+                                                <select
+                                                    name="asset_type"
+                                                    value={newAsset.asset_type}
+                                                    onChange={handleInputChange}
+                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                >
+                                                    <option value="Cotizado">Cotizado (precio automático)</option>
+                                                    <option value="No Cotizado">No Cotizado (valoración manual)</option>
+                                                </select>
+                                                <p className="text-xs text-gray-500 mt-1">
+                                                    {newAsset.asset_type === 'Cotizado' 
+                                                        ? 'El precio se actualizará automáticamente desde fuentes de mercado'
+                                                        : 'Deberás actualizar el valor manualmente según valoraciones propias'
+                                                    }
+                                                </p>
+                                            </div>
+
+                                            {/* Valor de Mercado Inicial (solo para No Cotizados) */}
+                                            {newAsset.asset_type === 'No Cotizado' && (
+                                                <div className="mb-6">
+                                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                        Valor de Mercado Inicial ($)
+                                                    </label>
+                                                    <input
+                                                        type="number"
+                                                        name="current_market_value"
+                                                        value={newAsset.current_market_value}
+                                                        onChange={handleInputChange}
+                                                        placeholder="10000"
+                                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        required
+                                                    />
+                                                    <p className="text-xs text-gray-500 mt-1">
+                                                        Este valor se usará como valoración inicial del activo
+                                                    </p>
+                                                </div>
+                                            )}
                                             <button 
                                                 type="submit"
                                                 className="w-full bg-gray-800 text-white font-medium py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors"
@@ -298,6 +343,7 @@ const PortfolioPage = () => {
                                                 <thead className="bg-gray-50">
                                                     <tr>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ticker</th>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor Compra</th>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor Mercado</th>
@@ -308,12 +354,28 @@ const PortfolioPage = () => {
                                                     {assets.map(asset => (
                                                         <tr key={asset.id} className="hover:bg-gray-50">
                                                             <td className="px-6 py-4 text-sm font-medium text-gray-900">{asset.name}</td>
+                                                            <td className="px-6 py-4 text-sm">
+                                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                                    asset.asset_type === 'Cotizado' 
+                                                                        ? 'bg-green-100 text-green-800' 
+                                                                        : 'bg-orange-100 text-orange-800'
+                                                                }`}>
+                                                                    {asset.asset_type || 'Cotizado'}
+                                                                </span>
+                                                            </td>
                                                             <td className="px-6 py-4 text-sm text-gray-500">{asset.ticker_symbol || 'N/A'}</td>
                                                             <td className="px-6 py-4 text-sm text-gray-500">
                                                                 ${parseFloat(asset.purchase_value || 0).toLocaleString('en-US')}
                                                             </td>
                                                             <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
-                                                                ${parseFloat(asset.current_market_value || 0).toLocaleString('en-US')}
+                                                                <div className="flex flex-col">
+                                                                    <span>${parseFloat(asset.current_market_value || 0).toLocaleString('en-US')}</span>
+                                                                    {asset.asset_type === 'No Cotizado' && asset.manual_valuation_date && (
+                                                                        <span className="text-xs text-gray-500">
+                                                                            Valorado: {new Date(asset.manual_valuation_date).toLocaleDateString('es-ES')}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
                                                             </td>
                                                             <td className="px-6 py-4 text-sm">
                                                                 <button 
