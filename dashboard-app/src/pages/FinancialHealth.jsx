@@ -58,7 +58,7 @@ const FinancialHealth = () => {
             {/* Header con indicador de estado general */}
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">💼 Salud Financiera</h2>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Salud Financiera</h2>
                     <p className="text-gray-600 text-sm">KPIs vitales del negocio en tiempo real</p>
                 </div>
                 <div className={`px-4 py-2 rounded-lg text-sm font-semibold shadow-sm ${

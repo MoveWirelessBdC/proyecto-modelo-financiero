@@ -124,7 +124,7 @@ const PortfolioPerformance = () => {
             {/* Header con métricas de resumen */}
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">📈 Rendimiento del Portafolio</h2>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Rendimiento del Portafolio</h2>
                     <p className="text-gray-600 text-sm">Análisis del colateral que respalda la operación</p>
                 </div>
                 <div className="flex gap-4 mt-4 md:mt-0">
@@ -152,7 +152,7 @@ const PortfolioPerformance = () => {
                 <div className="xl:col-span-3 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <h3 className="text-xl font-semibold text-gray-800 mb-1">📊 Evolución Histórica</h3>
+                            <h3 className="text-xl font-semibold text-gray-800 mb-1">Evolución Histórica</h3>
                             <p className="text-sm text-gray-600">Valor de mercado por activo a lo largo del tiempo</p>
                         </div>
                         <div className="flex space-x-2">
@@ -185,7 +185,7 @@ const PortfolioPerformance = () => {
                 {/* Composición del Portafolio */}
                 <div className="xl:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                     <div className="mb-6">
-                        <h3 className="text-xl font-semibold text-gray-800 mb-1">🥧 Composición</h3>
+                        <h3 className="text-xl font-semibold text-gray-800 mb-1">Composición</h3>
                         <p className="text-sm text-gray-600">Distribución por tipo de activo</p>
                     </div>
                     {compositionData && compositionData.length > 0 ? 

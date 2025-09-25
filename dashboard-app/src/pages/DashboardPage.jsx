@@ -27,7 +27,7 @@ const DashboardPage = () => {
                     <div className="flex flex-col md:flex-row md:items-center justify-between">
                         <div>
                             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-                                🎯 Centro de Control
+                                Centro de Control
                             </h1>
                             <p className="text-gray-600 text-sm md:text-base">
                                 Plataforma FinMod Pro - Gestión de Arbitraje Financiero
@@ -76,7 +76,7 @@ const DashboardPage = () => {
                             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                                 <div>
                                     <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                                        🏛️ Modelo de Negocio: Arbitraje de Tasas de Interés
+                                        Modelo de Negocio: Arbitraje de Tasas de Interés
                                     </h3>
                                     <p className="text-sm text-gray-600 max-w-2xl leading-relaxed">
                                         Financiamiento a PyMEs venezolanas mediante apalancamiento inteligente. 

@@ -75,7 +75,7 @@ const SalesPerformance = () => {
             {/* Header con métricas de pipeline */}
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">🎯 Rendimiento Comercial</h2>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Rendimiento Comercial</h2>
                     <p className="text-gray-600 text-sm">Motor de crecimiento del negocio - Desempeño del equipo</p>
                 </div>
                 <div className="flex gap-4 mt-4 md:mt-0">
@@ -108,7 +108,7 @@ const SalesPerformance = () => {
                 {/* Embudo de Ventas - Más espacio */}
                 <div className="xl:col-span-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                     <div className="mb-6">
-                        <h3 className="text-xl font-semibold text-gray-800 mb-1">📈 Pipeline de Ventas</h3>
+                        <h3 className="text-xl font-semibold text-gray-800 mb-1">Pipeline de Ventas</h3>
                         <p className="text-sm text-gray-600">Flujo de oportunidades por etapa del proceso</p>
                     </div>
                     {pipelineData && pipelineData.length > 0 ? (
@@ -160,7 +160,7 @@ const SalesPerformance = () => {
                 {/* Performance por Vendedor */}
                 <div className="xl:col-span-3 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                     <div className="mb-6">
-                        <h3 className="text-xl font-semibold text-gray-800 mb-1">👥 Performance Individual</h3>
+                        <h3 className="text-xl font-semibold text-gray-800 mb-1">Performance Individual</h3>
                         <p className="text-sm text-gray-600">Cartera activa por miembro del equipo</p>
                     </div>
                     {performanceData && performanceData.length > 0 ? (
