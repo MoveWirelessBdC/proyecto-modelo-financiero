@@ -1,0 +1,47 @@
+Excelente. Estas son exactamente las preguntas críticas que un analista de riesgos haría. Demuestran que estás pensando no solo en el "qué" construir, sino en el "cómo" y en sus implicaciones prácticas.
+
+Mi rol es ayudarte a traducir estas complejidades en decisiones de negocio y de producto claras. Aquí te presento mi análisis y recomendaciones para cada uno de tus puntos.
+
+---
+### **1. Calidad y Frecuencia de Datos (El Combustible del Motor)**
+
+#### **¿Actualización diaria suficiente o necesitas intraday?**
+* **Análisis:** Nuestro modelo de negocio no es de *trading* de alta frecuencia, sino de **gestión de colateral a mediano y largo plazo**. Las decisiones (aprobar un nuevo préstamo, cambiar de modo LTV) no se toman en cuestión de minutos, sino de días o semanas. El riesgo de una llamada de margen no suele materializarse en una sola sesión.
+* **Recomendación:** La actualización **diaria (End-of-Day)** es más que suficiente y es el estándar de la industria para la gestión de portafolios de este tipo. Buscar datos intraday añadiría una complejidad técnica y un costo enormes para un beneficio marginal o nulo. El botón "Actualizar" debe obtener los precios de cierre del día anterior.
+
+#### **¿Cómo manejar activos no cotizados públicamente?**
+* **Análisis:** Este es un desafío común en la valoración de portafolios. Estos activos (ej. una participación en una empresa privada, un inmueble) carecen de un precio de mercado observable.
+* **Recomendación:** La aplicación debe permitirlo, pero con un tratamiento especial. En el módulo de "Portafolio", al añadir un activo, debemos incluir un campo de "Tipo de Activo" (`Cotizado` o `No Cotizado`).
+    * Para los activos **"No Cotizados"**, el campo de `Valor de Mercado Actual` será siempre una **entrada manual**. El sistema debe mostrar claramente la fecha de la última valoración manual para que se entienda que no es un precio en tiempo real. En los reportes, se pueden separar o marcar para indicar que su valoración es discrecional.
+
+#### **¿Fuentes alternativas para activos venezolanos/regionales?**
+* **Análisis:** Las APIs internacionales como Alpha Vantage tendrán una cobertura limitada o nula de activos que cotizan exclusivamente en la Bolsa de Valores de Caracas (BVC).
+* **Recomendación:**
+    1.  **Entrada Manual (V1):** Para empezar, los activos venezolanos se tratarán como los "No Cotizados", requiriendo una actualización manual de su precio en Bolívares y un campo adicional para la **tasa de cambio** utilizada en la fecha de la valoración.
+    2.  **Web Scraping (V2):** Para una futura automatización, se podría desarrollar un pequeño *scraper* que extraiga los precios de cierre de sitios de referencia como **Bolsa de Valores de Caracas** o portales financieros locales. Esto requeriría un desarrollo a medida.
+
+---
+### **2. Complejidad de Cálculos Financieros (La Inteligencia)**
+
+#### **Beta, Volatilidad, Sharpe Ratio**
+* **Análisis:** Tienes razón, estos no son cálculos triviales. Requieren una serie de datos históricos y conocimiento estadístico para implementarse correctamente.
+* **Recomendación:** Adoptar un enfoque por fases.
+    * **Fase 1 (MVP del Dashboard 2.0):** Implementar las métricas de **Rendimiento** (ej. YTD, 1 Año), que son más sencillas. Mostrar el gráfico de rendimiento indexado y la composición del portafolio. Esto ya aporta un 80% del valor.
+    * **Fase 2 (Ampliación Analítica):** Una vez que tengamos un historial de precios diarios almacenado, podemos implementar los cálculos de **Volatilidad** y **Beta** en el backend. Son las métricas de riesgo más importantes para nuestro modelo de colateral.
+    * **Fase 3 (Refinamiento):** El **Sharpe Ratio** (Rentabilidad ajustada al riesgo) es una métrica más académica. Se puede añadir al final como un indicador de "calidad" del portafolio.
+
+---
+### **3. Experiencia del Usuario (La Usabilidad)**
+
+#### **Riesgo de "intimidar" a usuarios no financieros**
+* **Análisis:** Este es un punto crucial, especialmente para el equipo comercial y contable. El dashboard no debe ser un panel de avión incomprensible.
+* **Recomendación:** El diseño de **Dashboards Personalizados por Rol** que discutimos previamente es la solución.
+    * El **Equipo Comercial** nunca verá el Beta o la Volatilidad. Su dashboard se centrará en el embudo de ventas y sus comisiones.
+    * Solo el **Asesor Financiero/Admin** tendrá acceso a la vista completa con todas las métricas avanzadas.
+
+#### **Necesidad de explicaciones contextuales ("¿Qué significa Beta?")**
+* **Análisis:** Incluso para un usuario financiero, el contexto es clave.
+* **Recomendación:** Implementar **tooltips informativos** en toda la interfaz. Al pasar el mouse sobre el título de una métrica como "Beta", debería aparecer una pequeña caja de texto con una explicación clara y concisa.
+    * **Ejemplo de tooltip para "Beta":** *"Mide la volatilidad de tu portafolio en comparación con el mercado (S&P 500). Un Beta de 1.2 significa que tu cartera tiende a moverse un 20% más que el mercado, tanto en subidas como en bajadas."*
+
+Con estas consideraciones, equilibramos la sofisticación analítica con la usabilidad práctica, asegurando que la herramienta sea potente para el análisis de riesgo y a la vez accesible para la operación diaria del equipo.

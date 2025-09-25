@@ -14,6 +14,7 @@ import ProjectModel from './Project.js';
 import AmortizationScheduleModel from './AmortizationSchedule.js';
 import PortfolioAssetModel from './PortfolioAsset.js';
 import AssetValueHistoryModel from './AssetValueHistory.js';
+import BenchmarkDataModel from './BenchmarkData.js';
 
 // Configuración para encontrar la ruta del directorio actual en ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -41,6 +42,7 @@ db.Project = ProjectModel(sequelize, DataTypes);
 db.AmortizationSchedule = AmortizationScheduleModel(sequelize, DataTypes);
 db.PortfolioAsset = PortfolioAssetModel(sequelize, DataTypes);
 db.AssetValueHistory = AssetValueHistoryModel(sequelize, DataTypes);
+db.BenchmarkData = BenchmarkDataModel(sequelize, DataTypes);
 
 db.Rol_Permisos = sequelize.define('Rol_Permisos', {
   rol_id: {
